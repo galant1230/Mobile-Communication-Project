@@ -675,16 +675,10 @@ DFT = [DFT fft(rn(:, i), M)];
 ## 1.10 取出 52 個有效子載波 (等化前)
 
 ```matlab
-%% 取出 52 個有效子載波 (等化前)
-Yk = [DFT(7:32,:); DFT(34:59,:)];    
-% 從 FFT 輸出 (64×100 矩陣) 中，取出有效的 52 條子載波
-% → 丟掉左邊 Guard (1–6)、DC (33)、右邊 Guard (60–64)
-% Yk 變成 52×100 矩陣 (每欄對應一個 OFDM symbol 的資料子載波)
-
-Yk_serial = reshape(Yk, 1, sc*Nsymbol);  
-% 將 52×100 的矩陣攤平成一列向量
-% → 長度 = sc × Nsymbol = 52×100 = 5200
-% 方便後續做星座圖繪製或錯誤率計算
+Yk64 = [DFT(7:32, :) ; DFT(34:59, :)];
+Yk52 = [Yk64(:,1).' Yk64(:,2).'].';   % 串列化
+% 把前兩個 OFDM symbol 的資料子載波轉成 一維向量，方便丟進 scatterplot。
+% 實際上 Yk64 已經包含所有 symbol 的資料了，只是這裡只抓前兩個來展示。
 ```
 
 ### 🔹 為什麼只取 52 條？
@@ -713,9 +707,8 @@ Yk_serial = reshape(Yk, 1, sc*Nsymbol);
 ```matlab
 %% 繪製等化前星座圖
 figure;
-scatterplot(Yk_serial(1:104));              
-% 畫星座圖，輸入前 104 個符號 (對應前 2 個 OFDM symbol, 52×2=104)
-% Yk_serial 是 FFT 後取出的子載波資料 (尚未等化)
+scatterplot(Yk52);       
+% 由於傳輸的是 BPSK，所以星座圖理想情況下會出現 兩個點（±1），不過會因通道衰落 + AWGN 而散開。
 title('Constellation Before Equalization');
 ```
 
