@@ -746,11 +746,13 @@ title('Constellation Before Equalization');
 
 ```matlab
 %% 頻域等化 (Zero-Forcing)
-Hn = fft(h, M);               
+Hn = fft(h, M);             
 % 通道脈衝響應 h (長度6) 做 M=64 點 FFT
 % 得到頻率響應 Hn (64×1)
 
-Dk_eq = DFT ./ Hn.';           
+Dk = [];
+for i = 1:Nsymbol
+   Dk = [Dk DFT(:,i) ./ Hn.']; % Z(k)/H(k)        
 % Zero-Forcing 等化：把接收的頻域符號除以通道響應
 % 等價於逐子載波補償： D_hat[k] = Y[k] / H[k]
 ```
