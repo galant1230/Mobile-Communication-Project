@@ -64,72 +64,86 @@ $$
 ## Code
 
 ```matlab
-%% Mobile Communication Project #2 - OFDM Simulation
-clear; clc; close all;
+%% ==================== OFDM System Simulation (BPSK) ==================== %%
+clear all; close all; clc;
 
-%% 系統參數
-M = 64;                 % FFT 點數
-sc = 52;                % 資料子載波數
-ofdm_bit = 52;          % 每個 OFDM symbol 的 bits 數 (BPSK = 52)
-Nsymbol = 100;          % 模擬的 OFDM 符號數
-cp_len = 16;            % 循環字首長度
+%% -------------------- 系統參數設定 -------------------- %%
+M       = 64;                % FFT 點數 (Number of FFT points)
+sc      = 52;                % 資料子載波數 (Number of data sub-carriers)
+ofdmbit = 52;                % 每個 OFDM symbol 的 bits 數 (這裡用 BPSK，所以 bits = sub-carrier 數)
+Nsymbol = 100;               % 模擬 OFDM 符號數 (Number of OFDM symbols)
 
-%% 產生隨機 bits 並做 BPSK 調變
-Data = randi([0 1], ofdm_bit * Nsymbol, 1);
-dk = 2*Data - 1;                            % BPSK: 0→-1, 1→+1
-dk_sym = reshape(dk, sc, Nsymbol);          % Serial → Parallel
+%% -------------------- BPSK 調變 -------------------- %%
+Data   = randi([0,1], ofdmbit*Nsymbol, 1);   % 產生隨機位元資料 (0/1)
+dk     = 2*Data - 1;                         % BPSK 調變: 0→-1, 1→+1
+dk_sym = reshape(dk, sc, Nsymbol);           % 串列轉並列 (Serial → Parallel)
 
-%% 插入子載波 (52 個資料子載波)
+%% -------------------- 子載波配置 -------------------- %%
+% OFDM 有 64 個子載波，其中：
+%   - 使用 52 個做資料傳送
+%   - 中間 DC (第33個) 不用
+%   - 兩側 guard band 也不用
 Dk = zeros(M, Nsymbol);
-Dk(7:32,:)  = dk_sym(1:26,:);               % 左 26 個子載波
-Dk(34:59,:) = dk_sym(27:52,:);              % 右 26 個子載波
+Dk(7:32, :)  = dk_sym(1:26, :);   % 左半部 26 個資料子載波
+Dk(34:59, :) = dk_sym(27:52, :);  % 右半部 26 個資料子載波
 
-%% IFFT (轉回時域)
-IDFT = ifft(Dk, M);
+%% -------------------- IFFT (轉到時域) -------------------- %%
+IDFT = [];
+for i = 1:Nsymbol
+    IDFT = [IDFT ifft(Dk(:, i), M)];
+end
 
-%% 加入循環字首 (CP)
-D_cp = [IDFT((M-cp_len+1):M,:); IDFT];      % 前 16 點複製到最前面
-x_n = reshape(D_cp, 1, (M+cp_len)*Nsymbol);
+%% -------------------- 加入循環字首 (Cyclic Prefix, CP) -------------------- %%
+D_cp = zeros(M+16, Nsymbol);
+D_cp(1:16, :)   = IDFT(49:64, :);   % 複製最後 16 點到前面
+D_cp(17:80, :)  = IDFT(1:64, :);    % 原本的 64 點
 
-%% 通道模型 (多路徑衰落)
-h = [0.5-0.5j, 0, 0.15+0.12j, 0, 0, -0.1+0.05j];
-h = h ./ norm(h);                           % 正規化
-xh = conv(x_n, h);
+%% -------------------- 通道模型 (多路徑衰落) -------------------- %%
+% 定義一個多徑通道 impulse response
+h = [0.5-0.5j  0  0.15+0.12j  0  0  -0.1+0.05j];
 
-%% 加入 AWGN (Eb/N0 = 20 dB)
-Eb_N0 = 20;
-Eb = mean(abs(x_n).^2);
-Np = Eb*10^(-Eb_N0/10);
-z = awgn(xh(1:end-5), Eb_N0, 'measured');
+%% -------------------- 串列化並通過通道 -------------------- %%
+x_n = reshape(D_cp, 1, (M+16)*Nsymbol);   % 並列轉串列
+h_n = h ./ norm(h);                       % 通道正規化
+xh  = conv(x_n, h_n);                     % 傳輸: x * h
 
-%% 接收端：移除循環字首 (CP)
-receiver = reshape(z, M+cp_len, Nsymbol);
-rn = receiver(cp_len+1:end,:);              % 去掉 CP
+%% -------------------- 加入 AWGN 雜訊 -------------------- %%
+Eb_N0 = 20;                              % Eb/No (dB)
+Eb    = mean(abs(x_n).^2);               % 計算平均 bit 能量
+Np    = Eb * 10^(-(Eb_N0/10));           % 噪聲功率
+znn   = xh(1:end-5);                     % 調整長度 (扣掉通道記憶)
+z_n   = awgn(znn, 20, 'measured');       % 加入 AWGN
 
-%% FFT (轉回頻域)
-DFT = fft(rn, M);
+%% -------------------- 移除循環字首 (CP Removal) -------------------- %%
+receiver = reshape(z_n, 80, Nsymbol);
+rn       = receiver(17:end, :);   % 去掉前 16 點，只留 64 點
 
-%% 取出 52 個有效子載波 (等化前)
-Yk = [DFT(7:32,:); DFT(34:59,:)];
-Yk_serial = reshape(Yk, 1, sc*Nsymbol);
+%% -------------------- FFT (轉回頻域) -------------------- %%
+DFT = [];
+for i = 1:Nsymbol
+    DFT = [DFT fft(rn(:, i), M)];
+end
 
-%% 繪製等化前星座圖
-figure;
-scatterplot(Yk_serial(1:104));              % 取前 2 個 OFDM symbol
-title('Constellation Before Equalization');
+%% -------------------- 移除虛零子載波 (刪掉 DC 與 Guard) -------------------- %%
+Yk64 = [DFT(7:32, :) ; DFT(34:59, :)];
+Yk52 = [Yk64(:,1).' Yk64(:,2).'].';   % 串列化
+scatterplot(Yk52);
+title('Constellation (Before Equalization)');
 
-%% 頻域等化 (Zero-Forcing)
-Hn = fft(h, M);
-Dk_eq = DFT ./ Hn.';                        % Zero-Forcing: Yk / Hk
+%% -------------------- Equalizer (通道補償) -------------------- %%
+Hn = fft(h, M);   % 通道頻率響應
+Dk = [];
+for i = 1:Nsymbol
+    Dk = [Dk DFT(:,i) ./ Hn.'];   % Z(k)/H(k)
+end
 
-%% 取出 52 個子載波 (等化後)
-Dk_receiver = [Dk_eq(7:32,:); Dk_eq(34:59,:)];
-Dkr_serial = reshape(Dk_receiver, 1, sc*Nsymbol);
+%% -------------------- 還原資料子載波 -------------------- %%
+Dkreceiver = [Dk(7:32, :) ; Dk(34:59, :)];   % 去掉不用的載波
+Dkr        = reshape(Dkreceiver, 1, 52*Nsymbol);
 
-%% 繪製等化後星座圖
-figure;
-scatterplot(Dkr_serial(1:104));
-title('Constellation After Equalization');
+scatterplot(Dkr(1, 1:104));
+title('Constellation (After Equalization)');
+
 ```
 ---
 ## 1. OFDM 系統參數與公式說明
