@@ -4,7 +4,7 @@
 
 以下為本專案的 **OFDM 收發機 (Transceiver)** 系統架構圖：  
 
-![OFDM System Block Diagram](img/ofdm_block.png)
+![OFDM System Block Diagram](1.jpg)
 
 ---
 
