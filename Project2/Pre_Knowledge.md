@@ -413,24 +413,15 @@ x = 0.25    0.25    0.25    0.25
 
 ```matlab
 %% 加入循環字首 (CP)
-D_cp = [IDFT((M-cp_len+1):M,:); IDFT];   % 前 16 點複製到最前面
+D_cp = zeros(M+16, Nsymbol);
+D_cp(1:16, :)   = IDFT(49:64, :);   % 複製最後 16 點到前面
+D_cp(17:80, :)  = IDFT(1:64, :);    % 原本的 64 點
 x_n = reshape(D_cp, 1, (M+cp_len)*Nsymbol);
 ```
 
 ### 🔹 程式解釋
 
-1. **`IDFT((M-cp_len+1):M,:)`**
-
-   * 從每個 OFDM 符號 (每一欄) 的尾端，取出最後 \$len\_{cp}\$ 個樣本。
-   * 這裡 \$len\_{cp} = 16\$，所以取出第 49–64 點。
-   * 注意：因為 \$M=64\$，所以 index `49:64` 剛好在範圍內，不會有「沒值」的情況。
-
-2. **`[IDFT((M-cp_len+1):M,:); IDFT]`**
-
-   * 把取出的 16 點樣本放到原本的符號前面，形成「循環字首 (Cyclic Prefix)」。
-   * 新的每欄長度 = \$64+16=80\$ 點。
-
-3. **`reshape(D_cp, 1, (M+cp_len)*Nsymbol)`**
+1. **`reshape(D_cp, 1, (M+cp_len)*Nsymbol)`**
 
    * 將矩陣展平成一列向量，方便後續做通道傳輸。
    * 長度 = \$(M+len\_{cp}) \times N\_{symbol} = 80 \times 100 = 8000\$。
