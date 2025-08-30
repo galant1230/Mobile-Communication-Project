@@ -80,6 +80,7 @@ $$
 
 - 注意：需要將時域通道脈衝響應 $h[n]$ 轉換為頻域響應 $H_k$ (透過 FFT)。  
 ---
+## Matlab ver
 ```matlab
 %% Mobile Communication Project #2 - OFDM Simulation
 clear; clc; close all;
@@ -148,6 +149,106 @@ figure;
 scatterplot(Dkr_serial(1:104));
 title('Constellation After Equalization');
 ```
+---
+## Python Ver
+```python
+import numpy as np
+import matplotlib.pyplot as plt
+
+# ----------------------------
+# 系統參數
+# ----------------------------
+M = 64                  # FFT 點數
+sc = 52                 # 資料子載波數
+ofdm_bit = 52           # 每個 OFDM symbol bits 數 (BPSK = 52)
+Nsymbol = 100           # 模擬 OFDM 符號數
+cp_len = 16             # 循環字首長度
+
+# ----------------------------
+# 產生隨機 bits 並做 BPSK 調變
+# ----------------------------
+Data = np.random.randint(0, 2, ofdm_bit * Nsymbol)
+dk = 2*Data - 1                         # BPSK: 0→-1, 1→+1
+dk_sym = dk.reshape(Nsymbol, sc).T      # Serial → Parallel (sc × Nsymbol)
+
+# ----------------------------
+# 插入子載波 (52 個資料子載波)
+# ----------------------------
+Dk = np.zeros((M, Nsymbol), dtype=complex)
+Dk[6:32, :]  = dk_sym[0:26, :]          # 左 26 個子載波 (注意 Python index 從 0 開始)
+Dk[33:59, :] = dk_sym[26:52, :]         # 右 26 個子載波
+
+# ----------------------------
+# IFFT (轉回時域)
+# ----------------------------
+IDFT = np.fft.ifft(Dk, n=M, axis=0)
+
+# ----------------------------
+# 加入循環字首 (CP)
+# ----------------------------
+D_cp = np.vstack([IDFT[-cp_len:, :], IDFT])   # 複製最後 cp_len 個樣本到最前面
+x_n = D_cp.reshape(-1)                        # 串接成一維向量
+
+# ----------------------------
+# 通道模型 (多路徑衰落)
+# ----------------------------
+h = np.array([0.5-0.5j, 0, 0.15+0.12j, 0, 0, -0.1+0.05j])
+h = h / np.linalg.norm(h)                     # 正規化
+xh = np.convolve(x_n, h)
+
+# ----------------------------
+# 加入 AWGN
+# ----------------------------
+Eb_N0_dB = 20
+Eb = np.mean(np.abs(x_n)**2)                  # 平均 bit 能量
+Np = Eb * 10**(-Eb_N0_dB/10)                  # 雜訊功率
+noise = np.sqrt(Np/2) * (np.random.randn(len(xh)-5) + 1j*np.random.randn(len(xh)-5))
+z = xh[:len(xh)-5] + noise                    # 加入雜訊 (對齊 MATLAB xh(1:end-5))
+
+# ----------------------------
+# 接收端：移除循環字首 (CP)
+# ----------------------------
+receiver = z.reshape(Nsymbol, M+cp_len).T     # 變成 (M+cp_len) × Nsymbol
+rn = receiver[cp_len:, :]                     # 去掉 CP (保留 64 點)
+
+# ----------------------------
+# FFT (轉回頻域)
+# ----------------------------
+DFT = np.fft.fft(rn, n=M, axis=0)
+
+# ----------------------------
+# 取出 52 個有效子載波 (等化前)
+# ----------------------------
+Yk = np.vstack([DFT[6:32, :], DFT[33:59, :]])
+Yk_serial = Yk.reshape(-1)
+
+# 繪製等化前星座圖
+plt.figure()
+plt.scatter(np.real(Yk_serial[:104]), np.imag(Yk_serial[:104]))
+plt.title('Constellation Before Equalization')
+plt.grid(True)
+
+# ----------------------------
+# 頻域等化 (Zero-Forcing)
+# ----------------------------
+Hn = np.fft.fft(h, M)                         # 通道頻率響應
+Dk_eq = DFT / Hn[:, np.newaxis]               # Zero-Forcing 等化
+
+# ----------------------------
+# 取出 52 個子載波 (等化後)
+# ----------------------------
+Dk_receiver = np.vstack([Dk_eq[6:32, :], Dk_eq[33:59, :]])
+Dkr_serial = Dk_receiver.reshape(-1)
+
+# 繪製等化後星座圖
+plt.figure()
+plt.scatter(np.real(Dkr_serial[:104]), np.imag(Dkr_serial[:104]))
+plt.title('Constellation After Equalization')
+plt.grid(True)
+
+plt.show()
+```
+
 ---
 ## (II) 實驗二：BER 曲線繪製 (理想通道)
 
