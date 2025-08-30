@@ -255,7 +255,7 @@ $$
 x_{cp}[n] =
 \begin{cases}
 x[n + M - len_{cp}], & 0 \leq n < len_{cp} \\
-x[n - len_{cp}], & cp\_len \leq n < M + len_{cp}
+x[n - len_{cp}], & len_{cp} \leq n < M + len_{cp}
 \end{cases}
 $$
 
