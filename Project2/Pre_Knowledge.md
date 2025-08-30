@@ -628,13 +628,47 @@ rn = receiver(cp_len+1:end,:);
 
 ---
 ## 1.9 FFT
+```matlab
+DFT = [];
+for i = 1:Nsymbol
+    DFT = [DFT fft(rn(:, i), M)];
+end
+```
+
+### 🔹 程式逐行解釋
 
 ```matlab
-%% FFT (轉回頻域)
-DFT = fft(rn, M);   
-% 對每一欄 (每個去 CP 的 OFDM symbol) 做 M=64 點 FFT
-% rn 是 64×100 矩陣 → DFT 也是 64×100 矩陣
-% 每一欄 DFT(:,k) 就是第 k 個 OFDM symbol 的頻域表示
+DFT = [];
+```
+
+初始化一個空矩陣，用來存放接收端每個 OFDM symbol 經過 FFT 後的頻域資料。
+
+```matlab
+for i = 1:Nsymbol
+```
+
+逐一處理總共 `Nsymbol` 個接收到的 OFDM 符號。
+
+每個 `rn(:, i)` 代表 **第 i 個 OFDM 符號的時域取樣點**（長度 = 64，因為已去除 CP）。
+
+```matlab
+fft(rn(:, i), M)
+```
+
+對第 `i` 個符號做 **FFT (Fast Fourier Transform)**，將 **時域訊號轉換回頻域**。
+
+* 長度為 `M = 64`
+* 與發送端的 IFFT 點數一致
+* 得到的結果包含資料子載波、guard band 與 DC。
+
+```matlab
+DFT = [DFT fft(rn(:, i), M)];
+```
+
+把每個符號 FFT 的結果接在 `DFT` 後面，形成一個矩陣。
+
+最後 `DFT` 就存放所有 `Nsymbol` 個 OFDM 符號在頻域的表示。
+
 ```
 
 ---
