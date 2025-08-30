@@ -464,3 +464,113 @@ xh = conv(x_n, h);
 * `conv(x_n,h)`：模擬信號通過多路徑通道的效果。
 
 ---
+## 1.7 加入 AWGN (雜訊)
+
+```matlab
+Eb_N0 = 20;                        % 設定 Eb/N0 = 20 dB
+Eb = mean(abs(x_n).^2);            % 平均 bit 能量 (BPSK 下符號能量 = bit 能量)
+Np = Eb*10^(-Eb_N0/10);            % 由 Eb/N0 換算得到雜訊功率
+
+z = awgn(xh(1:end-5), Eb_N0, 'measured');
+% 在通道輸出訊號上加入 AWGN
+% 'measured' 表示依據訊號的實際功率來決定雜訊能量
+```
+## 1.7 加入 AWGN (雜訊)
+
+```matlab
+Eb_N0 = 20;                        % 設定 Eb/N0 = 20 dB
+Eb = mean(abs(x_n).^2);            % 平均 bit 能量 (BPSK 下符號能量 = bit 能量)
+Np = Eb*10^(-Eb_N0/10);            % 由 Eb/N0 換算得到雜訊功率
+
+z = awgn(xh(1:end-5), Eb_N0, 'measured');
+% 在通道輸出訊號上加入 AWGN
+% 'measured' 表示依據訊號的實際功率來決定雜訊能量
+```
+
+### 🔹 MATLAB `awgn` 函數用法
+
+* 語法：
+
+  ```matlab
+  y = awgn(x, SNRdB, 'measured')
+  ```
+
+  * `x`：輸入訊號。
+  * `SNRdB`：目標訊號雜訊比 (dB)。
+  * `'measured'`：自動量測輸入訊號功率，並根據目標 SNR 計算雜訊功率。
+
+* 功能：在輸入訊號 `x` 上加入符合指定 SNR 的 **白雜訊 (Gaussian Noise)**。
+
+* 如果不加 `'measured'`，`awgn` 預設訊號功率為 0 dBW，可能導致錯誤的 SNR。
+
+---
+
+### 🔹 為什麼 `Np = Eb*10^(-Eb_N0/10)`？（公式推導與單位說明）
+
+在通訊系統中，\$E\_b/N\_0\$ 常以 **dB** 表示：
+
+$$
+\left(\frac{E_b}{N_0}\right)_{dB} = 10\log_{10}\left(\frac{E_b}{N_0}\right)
+$$
+
+將其轉換為線性比值：
+
+$$
+\frac{E_b}{N_0} = 10^{\tfrac{(E_b/N_0)_{dB}}{10}}
+$$
+
+因此：
+
+$$
+N_0 = \frac{E_b}{E_b/N_0} = \frac{E_b}{10^{\tfrac{(E_b/N_0)_{dB}}{10}}}
+$$
+
+再整理：
+
+$$
+N_p = E_b \cdot 10^{- (E_b/N_0)_{dB} / 10}
+$$
+
+### 🔹 單位說明
+
+* \$E\_b\$：單 bit 能量，單位為焦耳/bit (J/bit)。在程式中用 `mean(abs(x_n).^2)` 近似，因為 BPSK 下符號能量 = bit 能量。
+* \$N\_0\$：雜訊功率譜密度，單位 W/Hz (瓦特每赫茲)。
+* \$N\_p\$：對應的雜訊功率，單位 W (瓦特)。
+
+👉 結論：`Np = Eb*10^(-Eb_N0/10)` 就是依據 **dB 定義公式**，將 \$E\_b/N\_0\$ (dB) 換算成雜訊功率，並搭配 MATLAB `awgn` 函數來產生對應的高斯白雜訊。
+
+---
+
+### 🔹 \$E\_b/N\_0\$ 與 SNR 的比較
+
+* **\$E\_b/N\_0\$ (bit energy to noise spectral density ratio)**
+
+  * 單一 bit 的能量與單位頻寬雜訊功率密度的比值。
+  * 偏重於理論分析，常用於比較不同調變方式的效能。
+
+* **SNR (Signal-to-Noise Ratio)**
+
+  * 接收訊號平均功率與雜訊平均功率的比值。
+  * 偏重於實際量測，與系統頻寬及符號率有關。
+
+
+### 🔹 兩者的關係
+
+一般公式：
+
+$$
+SNR = \frac{E_b}{N_0} \cdot \log_2(M)
+$$
+
+其中 \$M\$ 為調變星座點數。
+
+* **BPSK (\$M=2\$)**：\$\log\_2(2) = 1\$ → \$SNR = E\_b/N\_0\$。
+* **QPSK (\$M=4\$)**：\$SNR = 2 \cdot (E\_b/N\_0)\$。
+* **16-QAM (\$M=16\$)**：\$SNR = 4 \cdot (E\_b/N\_0)\$。
+
+✅ 總結：
+
+* 在 **BPSK** 下，\$E\_b/N\_0\$ 與 SNR 幾乎相同。
+* 在 **多進制調變 (QPSK, QAM)** 下，SNR 比 \$E\_b/N\_0\$ 高，差距為 \$\log\_2(M)\$ 倍。
+
+---
