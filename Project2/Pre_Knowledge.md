@@ -475,17 +475,6 @@ z = awgn(xh(1:end-5), Eb_N0, 'measured');
 % 在通道輸出訊號上加入 AWGN
 % 'measured' 表示依據訊號的實際功率來決定雜訊能量
 ```
-## 1.7 加入 AWGN (雜訊)
-
-```matlab
-Eb_N0 = 20;                        % 設定 Eb/N0 = 20 dB
-Eb = mean(abs(x_n).^2);            % 平均 bit 能量 (BPSK 下符號能量 = bit 能量)
-Np = Eb*10^(-Eb_N0/10);            % 由 Eb/N0 換算得到雜訊功率
-
-z = awgn(xh(1:end-5), Eb_N0, 'measured');
-% 在通道輸出訊號上加入 AWGN
-% 'measured' 表示依據訊號的實際功率來決定雜訊能量
-```
 
 ### 🔹 MATLAB `awgn` 函數用法
 
