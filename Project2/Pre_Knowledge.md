@@ -739,4 +739,47 @@ $Y[k] = H[k] \cdot D[k] + W[k]$
 * 實務上常搭配 MMSE 改進。
 
 ---
+## 1.13 星座圖 (等化後)
+
+```matlab
+%% 取出 52 個子載波 (等化後)
+Dk_receiver = [Dk_eq(7:32,:); Dk_eq(34:59,:)];
+Dkr_serial = reshape(Dk_receiver, 1, sc*Nsymbol);
+
+%% 繪製等化後星座圖
+figure;
+scatterplot(Dkr_serial(1:104));
+title('Constellation After Equalization');
+```
+
+### 🔹 等化後的效果
+
+* 等化器 (Zero-Forcing) 把通道響應 \$H\[k]\$ 抵消後：
+  $\hat{D}[k] = D[k] + \frac{W[k]}{H[k]}$
+* 通道失真被補償 → 星座圖回到接近理想 BPSK 的 ±1。
+* 因此「等化後星座圖」比「等化前」更集中、對稱。
+
+
+### 🔹 雜訊功率縮放問題
+
+* 在發射端：
+
+  * 使用 \$M=64\$ 點 IFFT，但實際只有 \$sc=52\$ 條子載波承載資料。
+  * 因此符號能量被分散到 64 點時域樣本中。
+
+* 在接收端：
+
+  * FFT 會把 AWGN 均勻分配到所有 64 條子載波。
+  * 但我們只取其中 52 條。
+  * 若不修正，星座圖上的雜訊會顯得比理論預期大。
+
+* 修正方法：將雜訊功率 rescale：
+  $\text{Noise}_{eq} = \text{Noise} \times \sqrt{\tfrac{M}{sc}} = \text{Noise} \times \sqrt{\tfrac{64}{52}}$
+
+* 這樣可以保證星座圖上的點分布與理論匹配，不會過度擴散。
+
+✅ 總結：
+
+* **等化後星座圖**：顯示通道補償後，符號點更接近理想 BPSK。
+* **縮放因子 \$\sqrt{M/sc}\$**：用來修正 IFFT 長度與有效子載波數的差異，避免雜訊分佈失真。
 
