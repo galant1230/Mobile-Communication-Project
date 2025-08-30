@@ -222,11 +222,11 @@ $$
 
 一般化：若改成 M\_mod-QAM，則每個 OFDM symbol 的 bits = sc × log2(M\_mod)（例如 QPSK=2、16-QAM=4）。
 
-和你的程式對應：
+和程式對應：
 
 * sc = 52，ofdm\_bit = 52（BPSK → 每個子載波 1 bit）。
 * dk = 2\*Data - 1 進行 BPSK 映射（0→-1、1→+1）。
-* Dk(7:32,:) 與 Dk(34:59,:) 將 52 個資料載波填入頻域（跳過 DC=索引 33，並在兩端留 Guard bands）。
+* `Dk(7:32,:)` 與 `Dk(34:59,:)` 將 52 個資料載波填入頻域（跳過 DC=索引 33，並在兩端留 Guard bands）。
 
 ---
 
