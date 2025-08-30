@@ -752,7 +752,8 @@ Hn = fft(h, M);
 
 Dk = [];
 for i = 1:Nsymbol
-   Dk = [Dk DFT(:,i) ./ Hn.']; % Z(k)/H(k)        
+   Dk = [Dk DFT(:,i) ./ Hn.']; % Z(k)/H(k)
+end    
 % Zero-Forcing 等化：把接收的頻域符號除以通道響應
 % 等價於逐子載波補償： D_hat[k] = Y[k] / H[k]
 ```
