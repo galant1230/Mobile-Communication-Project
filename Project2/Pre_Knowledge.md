@@ -247,15 +247,15 @@ $$
 
 ---
 
-### 1.5 循環字首長度 $cp_{len} = 16$
+### 1.5 循環字首長度 $len_{cp} = 16$
 
-在時域 OFDM 符號前，會複製最後 $cp_{len} = 16$ 個樣本加到最前面：
+在時域 OFDM 符號前，會複製最後 $len_{cp} = 16$ 個樣本加到最前面：
 
 $$
 x_{cp}[n] =
 \begin{cases}
-x[n + M - cp\_len], & 0 \leq n < cp\_len \\
-x[n - cp\_len], & cp\_len \leq n < M + cp\_len
+x[n + M - len_{cp}], & 0 \leq n < len_{cp} \\
+x[n - len_{cp}], & cp\_len \leq n < M + len_{cp}
 \end{cases}
 $$
 
