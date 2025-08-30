@@ -250,8 +250,8 @@ plt.show()
 ```
 ---
 ## (I) Result
-![2](2.jpg)
-![3](3.jpg)
+<img src="2.jpg" alt="2" width="50%">
+<img src="3.jpg" alt="3" width="50%">
 
 ---
 ## (II) 實驗二：BER 曲線繪製 (理想通道)
