@@ -561,3 +561,38 @@ $$
 * 在 **多進制調變 (QPSK, QAM)** 下，SNR 比 \$E\_b/N\_0\$ 高，差距為 \$\log\_2(M)\$ 倍。
 
 ---
+## 1.8 接收端：移除循環字首 (CP)
+
+```matlab
+%% 接收端：移除循環字首 (CP)
+receiver = reshape(z, M+cp_len, Nsymbol);   
+% 將接收訊號 z (長度 8000) 重新整理成 (M+len_cp)×Nsymbol = 80×100 的矩陣
+% → 每一欄對應一個 OFDM symbol (含 CP)
+
+rn = receiver(cp_len+1:end,:);              
+% 去掉每一欄前面的 CP (前 16 點)，保留後 64 點
+% rn 變成 64×100 矩陣，每欄是一個去 CP 的 OFDM symbol
+```
+
+### 🔹 為什麼要移除 CP？
+
+* 傳送端在 OFDM symbol 前加上了 CP (複製最後 16 點)。
+* 在接收端，只需要取回「去掉 CP 的部分」，因為：
+
+  1. **CP 的角色**：避免 ISI、讓卷積變成循環卷積，但本身不承載新訊息。
+  2. 去掉 CP 後的 64 點剛好對應一個 FFT block，滿足頻域模型：
+     $Y[k] = H[k]D[k] + W[k]$
+
+### 🔹 對應數學模型
+
+* 去掉 CP 的時域訊號矩陣：
+  $r[n] = y[n+len_{cp}], \quad n=0,1,\dots,M-1$
+* 接下來即可對 `rn` 做 FFT，回到頻域。
+
+
+✅ 總結：
+
+* `reshape(z, M+cp_len, Nsymbol)` → 把連續接收訊號切分成一個個含 CP 的 OFDM symbol。
+* `receiver(cp_len+1:end,:)` → 移除每個 symbol 的 CP，只保留 64 點有效資料。
+
+---
