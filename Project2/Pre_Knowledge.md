@@ -596,3 +596,14 @@ rn = receiver(cp_len+1:end,:);
 * `receiver(cp_len+1:end,:)` → 移除每個 symbol 的 CP，只保留 64 點有效資料。
 
 ---
+## 1.9 FFT
+
+```matlab
+%% FFT (轉回頻域)
+DFT = fft(rn, M);   
+% 對每一欄 (每個去 CP 的 OFDM symbol) 做 M=64 點 FFT
+% rn 是 64×100 矩陣 → DFT 也是 64×100 矩陣
+% 每一欄 DFT(:,k) 就是第 k 個 OFDM symbol 的頻域表示
+```
+
+---
