@@ -280,4 +280,20 @@ $$
    * 這使得 **每個子載波可獨立等化**。
 
 ---
+## 2. 隨機 bits 產生與 BPSK 調變
+```matlab
+%% 產生隨機 bits 並做 BPSK 調變
+Data = randi([0 1], ofdm_bit * Nsymbol, 1);    
+% randi([imin imax], m, n)：產生一個 m×n 的隨機整數矩陣
+% 這裡 randi([0 1], ofdm_bit * Nsymbol, 1) → 產生 (5200×1) 的隨機 0/1 序列
+% (5200 = 52 × 100)
 
+dk = 2*Data - 1;                            
+% BPSK 映射：0 → -1, 1 → +1
+% 映射結果是一串 {-1, +1} 的序列（實數）
+
+dk_sym = reshape(dk, sc, Nsymbol);          
+% reshape(A, m, n)：將矩陣 A 重新排成 m×n 大小（不改變元素總數）
+% 這裡 reshape(dk, 52, 100) → 把長度 5200 的向量，重組成 52×100 矩陣
+% → 每一欄 (52×1) 對應一個 OFDM symbol（52 個子載波）
+```
