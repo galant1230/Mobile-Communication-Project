@@ -331,19 +331,45 @@ Dk(34:59,:) = dk_sym(27:52,:);
 ## 4. IFFT (轉回時域)
 
 ```matlab
-%% IFFT (轉回時域)
-IDFT = ifft(Dk, M);
+IDFT = [];
+for i = 1:Nsymbol
+    IDFT = [IDFT ifft(Dk(:, i), M)];
+end
 ```
 
-### 🔹 程式解釋
+### 🔹 程式逐行解釋
 
-* `ifft(X, M)`：對矩陣 `X` 的每一欄做 \$M\$ 點 **逆快速傅立葉轉換 (IFFT)**。
-* 這裡 `Dk` 是 \$64 \times 100\$ 的頻域資料矩陣：
+```matlab
+IDFT = [];
+```
 
-  * 每一欄代表一個 OFDM symbol 在頻域的 64 個子載波。
-* `ifft(Dk, M)` 會輸出一個 \$64 \times 100\$ 的矩陣 `IDFT`：
+初始化一個空矩陣，用來存放每個 OFDM symbol 經過 IFFT 後的時域訊號。
 
-  * 每一欄是經過 \$M=64\$ 點 IFFT 後的**時域 OFDM symbol**。
+```matlab
+for i = 1:Nsymbol
+```
+
+逐一處理總共 `Nsymbol` 個 OFDM 符號。
+
+每個 `Dk(:, i)` 代表 **第 i 個 OFDM 符號的頻域資料**（長度 = 64 點，因為 FFT 點數 `M=64`）。
+
+```matlab
+ifft(Dk(:, i), M)
+```
+
+對第 `i` 個符號做 **IFFT (Inverse Fast Fourier Transform)**，將 **頻域子載波符號轉換成時域訊號**。
+
+* 長度為 `M = 64`
+* IFFT 的目的：把 **平行的子載波 (frequency-domain)** 轉成 **連續的時域訊號**，準備送到通道。
+
+```matlab
+IDFT = [IDFT ifft(Dk(:, i), M)];
+```
+
+把每次得到的 **一個時域 OFDM 符號 (64 點)**，接在 `IDFT` 後面。
+
+最後 `IDFT` 會是一個矩陣，存放所有 `Nsymbol` 個時域 OFDM 符號。
+
 
 ### 🔹 為什麼 IFFT = IDFT？
 
