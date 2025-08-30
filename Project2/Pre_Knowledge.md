@@ -61,7 +61,76 @@ $$
    - 將等化後的符號 $\hat{D}_k$ 判決回原始 bits。  
 
 ---
+## Code
+```matlab
+%% Mobile Communication Project #2 - OFDM Simulation
+clear; clc; close all;
 
+%% 系統參數
+M = 64;                 % FFT 點數
+sc = 52;                % 資料子載波數
+ofdm_bit = 52;          % 每個 OFDM symbol 的 bits 數 (BPSK = 52)
+Nsymbol = 100;          % 模擬的 OFDM 符號數
+cp_len = 16;            % 循環字首長度
+
+%% 產生隨機 bits 並做 BPSK 調變
+Data = randi([0 1], ofdm_bit * Nsymbol, 1);
+dk = 2*Data - 1;                            % BPSK: 0→-1, 1→+1
+dk_sym = reshape(dk, sc, Nsymbol);          % Serial → Parallel
+
+%% 插入子載波 (52 個資料子載波)
+Dk = zeros(M, Nsymbol);
+Dk(7:32,:)  = dk_sym(1:26,:);               % 左 26 個子載波
+Dk(34:59,:) = dk_sym(27:52,:);              % 右 26 個子載波
+
+%% IFFT (轉回時域)
+IDFT = ifft(Dk, M);
+
+%% 加入循環字首 (CP)
+D_cp = [IDFT((M-cp_len+1):M,:); IDFT];      % 前 16 點複製到最前面
+x_n = reshape(D_cp, 1, (M+cp_len)*Nsymbol);
+
+%% 通道模型 (多路徑衰落)
+h = [0.5-0.5j, 0, 0.15+0.12j, 0, 0, -0.1+0.05j];
+h = h ./ norm(h);                           % 正規化
+xh = conv(x_n, h);
+
+%% 加入 AWGN (Eb/N0 = 20 dB)
+Eb_N0 = 20;
+Eb = mean(abs(x_n).^2);
+Np = Eb*10^(-Eb_N0/10);
+z = awgn(xh(1:end-5), Eb_N0, 'measured');
+
+%% 接收端：移除循環字首 (CP)
+receiver = reshape(z, M+cp_len, Nsymbol);
+rn = receiver(cp_len+1:end,:);              % 去掉 CP
+
+%% FFT (轉回頻域)
+DFT = fft(rn, M);
+
+%% 取出 52 個有效子載波 (等化前)
+Yk = [DFT(7:32,:); DFT(34:59,:)];
+Yk_serial = reshape(Yk, 1, sc*Nsymbol);
+
+%% 繪製等化前星座圖
+figure;
+scatterplot(Yk_serial(1:104));              % 取前 2 個 OFDM symbol
+title('Constellation Before Equalization');
+
+%% 頻域等化 (Zero-Forcing)
+Hn = fft(h, M);
+Dk_eq = DFT ./ Hn.';                        % Zero-Forcing: Yk / Hk
+
+%% 取出 52 個子載波 (等化後)
+Dk_receiver = [Dk_eq(7:32,:); Dk_eq(34:59,:)];
+Dkr_serial = reshape(Dk_receiver, 1, sc*Nsymbol);
+
+%% 繪製等化後星座圖
+figure;
+scatterplot(Dkr_serial(1:104));
+title('Constellation After Equalization');
+```
+---
 ## 1. OFDM 系統參數與公式說明
 
 ```matlab
