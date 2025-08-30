@@ -643,4 +643,45 @@ Yk_serial = reshape(Yk, 1, sc*Nsymbol);
 * 這些就是後續要進行等化與解調的資料。
 
 ---
+## 1.11 繪製等化前星座圖
+
+```matlab
+%% 繪製等化前星座圖
+figure;
+scatterplot(Yk_serial(1:104));              
+% 畫星座圖，輸入前 104 個符號 (對應前 2 個 OFDM symbol, 52×2=104)
+% Yk_serial 是 FFT 後取出的子載波資料 (尚未等化)
+title('Constellation Before Equalization');
+```
+
+---
+
+### 🔹 星座圖 (Constellation Diagram) 是什麼？
+
+* **星座圖** = 調變符號在複數平面 (I/Q 平面) 的散點圖。
+* 橫軸：同相分量 (In-phase, I = Re{symbol})。
+* 縱軸：正交分量 (Quadrature, Q = Im{symbol})。
+
+用途：
+
+1. **觀察調變格式** → BPSK、QPSK、QAM 等有不同排列。
+2. **檢查通道效應** → 衰落、相位旋轉、雜訊會使點偏移或散開。
+3. **檢查等化效果** → 等化前後星座圖對比，可以看出等化是否成功。
+
+### 🔹 為什麼一維向量能畫成 2D？
+
+* `Yk_serial` 雖然是一維向量，但其元素是 **複數**。
+* MATLAB `scatterplot` 會自動將：
+
+  * `real(Yk_serial)` 當作 **x 軸 (I)**
+  * `imag(Yk_serial)` 當作 **y 軸 (Q)**
+* 所以能把一維複數序列畫成二維 I/Q 散點圖。
+
+### 🔹 在本程式中的作用
+
+* **理想 BPSK 星座圖**：只有兩個點 (+1, -1) 在實軸上。
+* **等化前**：通道衰落 + 雜訊 → 點群會旋轉、偏移、發散。
+* **等化後**：應該收斂回接近 ±1 的兩個群集。
+
+---
 
