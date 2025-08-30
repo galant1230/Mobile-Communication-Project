@@ -498,9 +498,8 @@ z = awgn(xh(1:end-5), Eb_N0, 'measured');
 
 在通訊系統中，\$E\_b/N\_0\$ 常以 **dB** 表示：
 
-$$
-\left(\frac{E_b}{N_0}\right)_{dB} = 10\log_{10}\left(\frac{E_b}{N_0}\right)
-$$
+$(E_b/N_0)_{dB} = 10\log_{10}(E_b/N_0)$
+
 
 將其轉換為線性比值：
 
