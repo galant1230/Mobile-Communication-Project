@@ -248,6 +248,10 @@ plt.grid(True)
 
 plt.show()
 ```
+---
+## (I) Result
+![2](2.jpg)
+![3](3.jpg)
 
 ---
 ## (II) 實驗二：BER 曲線繪製 (理想通道)
