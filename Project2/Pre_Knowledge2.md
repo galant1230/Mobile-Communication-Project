@@ -95,7 +95,7 @@ scatterplot(Dkr(1,1:104));
 ```
 
 ---
-## AWGN
+## 1. AWGN
 ```matlab
 Eb = mean(abs(x_n).^2);
 for Eb_N0 = 0:2:8
@@ -132,20 +132,66 @@ for Eb_N0 = 0:2:8
 
 ---
 
+### 🔹 BPSK 在 AWGN 下的理論 BER
+
+在 **AWGN 通道**下，BPSK 的錯誤率公式為：
+
+1.1. **系統模型**：
+
+   * 傳送 bit = 0 → \$+\sqrt{E\_b}\$
+   * 傳送 bit = 1 → \$-\sqrt{E\_b}\$
+   * 接收端：
+     
+     $y = \pm\sqrt{E_b} + n, \quad n \sim \mathcal{N}(0, N_0/2)$
+
+1.2. **錯誤機率**：
+
+   使用零門檻判決，錯誤率為：
+   
+   $P_b = Q\!\left(\sqrt{\tfrac{2E_b}{N_0}}\right)$
+
+3. **Q-function 與 erfc 的關係**：
+   
+   $Q(x) = \tfrac{1}{2}\,\text{erfc}\!\left(\tfrac{x}{\sqrt{2}}\right)$
+
+   因此：
+   
+   $P_b = \tfrac{1}{2}\,\text{erfc}\!\left(\sqrt{\tfrac{E_b}{N_0}}\right)$
+
+---
+
+### 🔹 MATLAB 程式對應
+
 ```matlab
 % theoretical BER
 BPSK_Pb(Eb_N0/2+1) = 0.5*erfc(sqrt(10^(Eb_N0/10)));
 ```
 
-* BPSK 在 AWGN 通道下的理論 BER 公式：
+* `10^(Eb_N0/10)`：把 dB 轉換成線性比例。
+* `sqrt(...)`：計算 \$\sqrt{E\_b/N\_0}\$ 。
+* `erfc(...)`：互補誤差函數，對應公式。
+* `0.5*erfc(...)`：對應 \$P\_b = \tfrac{1}{2},\text{erfc}(\sqrt{E\_b/N\_0})\$ 。
 
-  $P_b = Q\left(\sqrt{2E_b/N_0}\right) = \tfrac{1}{2} \, \text{erfc}\left(\sqrt{E_b/N_0}\right)$
+---
 
-* `10^(Eb_N0/10)`：把 dB 轉成線性。
+### 🔹 為什麼寫 `BPSK_Pb(Eb_N0/2+1)`？
 
-* `erfc()`：互補誤差函數，用來計算 Q-function。
+迴圈設定：
 
-* 存到 `BPSK_Pb`，後面畫理論曲線。
+```matlab
+for Eb_N0 = 0:2:8
+```
+
+* `Eb_N0` 代表真實的 SNR(dB)：0, 2, 4, 6, 8。
+* MATLAB 陣列索引 **不能從 0 開始**，所以不能直接用 `BPSK_Pb(Eb_N0)`。
+
+解法：
+
+* 除以 2：把 {0,2,4,6,8} → {0,1,2,3,4}
+* 再 +1：變成 {1,2,3,4,5}
+
+這樣剛好對應陣列索引，結果存在 `BPSK_Pb(1:5)` 裡。
+
 
 ---
 
