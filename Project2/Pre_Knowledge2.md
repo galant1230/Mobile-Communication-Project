@@ -95,6 +95,88 @@ scatterplot(Dkr(1,1:104));
 ```
 
 ---
+## AWGN
+```matlab
+Eb = mean(abs(x_n).^2);
+for Eb_N0 = 0:2:8
+    % theoretical BER
+    BPSK_Pb(Eb_N0/2+1) = 0.5*erfc(sqrt(10^(Eb_N0/10)));
+
+    Np = Eb * 10^(-(Eb_N0/10));
+    ns = sqrt((64/52)*Np/2) * (randn(1,length(D_cp(:,:))*Nsymbol) ...
+       + 1i*randn(1,length(D_cp(:,:))*Nsymbol));
+    z_nxh = xh(1:end) + ns;
+```
+
+---
+
+### 🔹 程式逐行解釋
+
+```matlab
+Eb = mean(abs(x_n).^2);
+```
+
+* `x_n` 是發送端 OFDM 訊號（IFFT + CP 後展平的一維訊號）。
+* `abs(x_n).^2`：每個取樣點的能量。
+* `mean(...)`：取平均能量。
+* 在 BPSK 下，這等效於 **每 bit 能量 \$E\_b\$**。
+
+---
+
+```matlab
+for Eb_N0 = 0:2:8
+```
+
+* 設定模擬的 \$E\_b/N\_0\$ 測試範圍：0, 2, 4, 6, 8 dB。
+* 用來觀察 BER 隨 SNR 的變化。
+
+---
+
+```matlab
+% theoretical BER
+BPSK_Pb(Eb_N0/2+1) = 0.5*erfc(sqrt(10^(Eb_N0/10)));
+```
+
+* BPSK 在 AWGN 通道下的理論 BER 公式：
+
+  $P_b = Q\left(\sqrt{2E_b/N_0}\right) = \tfrac{1}{2} \, \text{erfc}\left(\sqrt{E_b/N_0}\right)$
+
+* `10^(Eb_N0/10)`：把 dB 轉成線性。
+
+* `erfc()`：互補誤差函數，用來計算 Q-function。
+
+* 存到 `BPSK_Pb`，後面畫理論曲線。
+
+---
+
+```matlab
+Np = Eb * 10^(-(Eb_N0/10));
+```
+
+* 根據公式 \$ N\_0 = E\_b / (E\_b/N\_0)\$，計算 **雜訊功率**。
+* 在這裡 `Np` 代表 AWGN 的平均功率。
+
+---
+
+```matlab
+ns = sqrt((64/52)*Np/2) * (randn(1,length(D_cp(:,:))*Nsymbol) ...
+       + 1i*randn(1,length(D_cp(:,:))*Nsymbol));
+```
+
+* 產生複數 AWGN：`randn + 1i*randn`。
+* 除以 `sqrt(2)` 讓實部、虛部各自有變異數 \$Np/2\$，總功率為 \$Np\$。
+* 前面的 `(64/52)`：修正因子，因為雖然有 64 個子載波，但只有 52 個用來傳資料，需做功率正規化。
+* 結果 `ns` 為符合功率分配的 AWGN。
+
+---
+
+```matlab
+z_nxh = xh(1:end) + ns;
+```
+
+* `xh`：通過通道的訊號 (這裡 h=1，所以相當於原始訊號)。
+* `ns`：生成的 AWGN。
+* 兩者相加 → 接收端訊號 `z_nxh`。
 
 
 
