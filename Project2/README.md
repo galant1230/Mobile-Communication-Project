@@ -387,6 +387,108 @@ legend('Simulation BER','Theoretical BER');
 %----------------- scatterplot (After Equalizer) -----------------------%
 scatterplot(Dkr(1,1:104));
 ```
+---
+## Python Version
+```python
+
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.special import erfc
+
+# --------------------- 系統參數 --------------------- #
+M = 64                  # FFT 點數
+sc = 52                 # 資料子載波數
+ofdmbit = 52            # 每個 OFDM symbol 的 bits (BPSK → 52)
+Nsymbol = 100           # 模擬的 OFDM 符號數
+
+# --------------------- BPSK 調變 --------------------- #
+Data = np.random.randint(0, 2, ofdmbit * Nsymbol)   # 產生隨機 bits
+dk = 2*Data - 1                                     # BPSK: 0→-1, 1→+1
+dk_sym = dk.reshape(sc, Nsymbol)                    # 串列轉並列
+
+# --------------------- 子載波配置 --------------------- #
+Dk = np.zeros((M, Nsymbol), dtype=complex)
+Dk[6:32, :]  = dk_sym[0:26, :]   # 第7~32子載波 (索引6:32)
+Dk[33:59, :] = dk_sym[26:52, :]  # 第34~59子載波 (索引33:59)
+
+# --------------------- IFFT --------------------- #
+IDFT = np.fft.ifft(Dk, n=M, axis=0)
+
+# --------------------- 加 CP --------------------- #
+cp_len = 16
+D_cp = np.vstack([IDFT[-cp_len:, :], IDFT])   # 複製最後16點到前面
+
+# --------------------- 通道 h --------------------- #
+h = np.array([1])   # 單徑通道 (沒有衰落)
+
+# --------------------- 串列化 & 通道傳輸 --------------------- #
+x_n = D_cp.reshape(-1)
+xh = np.convolve(x_n, h)
+
+# --------------------- BER 模擬 --------------------- #
+Eb = np.mean(np.abs(x_n)**2)
+EbN0_dB = np.arange(0, 10, 2)   # 0:2:8 dB
+ber = []
+BPSK_Pb = []
+
+for snr_dB in EbN0_dB:
+    # 理論 BER
+    BPSK_Pb.append(0.5 * erfc(np.sqrt(10**(snr_dB/10))))
+
+    # 計算雜訊功率
+    Np = Eb * 10**(-snr_dB/10)
+    noise = np.sqrt((64/52)*Np/2) * (np.random.randn(len(xh)) + 1j*np.random.randn(len(xh)))
+    z_nxh = xh[:len(x_n)] + noise   # 接收訊號
+
+    # ----------------- CP 移除 ----------------- #
+    receiver = z_nxh.reshape(M+cp_len, Nsymbol)
+    rn = receiver[cp_len:, :]   # 去掉 CP
+
+    # ----------------- FFT ----------------- #
+    DFT = np.fft.fft(rn, n=M, axis=0)
+
+    # ----------------- 取出資料子載波 ----------------- #
+    Yk64 = np.vstack([DFT[6:32, :], DFT[33:59, :]])
+    Yk52 = Yk64.flatten()   # 串列化
+
+    # ----------------- 畫星座圖 (Before Equalizer) ----------------- #
+    if snr_dB == 0:  # 只在第一個 SNR 畫一次
+        plt.figure()
+        plt.scatter(Yk52.real[:200], Yk52.imag[:200], c='b', marker='.')
+        plt.title("Constellation (Before Equalizer)")
+        plt.grid(True)
+
+    # ----------------- Equalizer ----------------- #
+    H_n = np.fft.fft(h, M)
+    Dk_eq = DFT / H_n[:, None]
+
+    Dkreceiver = np.vstack([Dk_eq[6:32, :], Dk_eq[33:59, :]])
+    Dkr = Dkreceiver.flatten()
+
+    # ----------------- 硬判決 ----------------- #
+    Dkre = np.sign(Dkr.real)
+
+    # ----------------- 計算 BER ----------------- #
+    errors = np.sum(Dkre != dk)
+    ber.append(errors / (ofdmbit * Nsymbol))
+
+# --------------------- 畫 BER 曲線 --------------------- #
+plt.figure()
+plt.semilogy(EbN0_dB, ber, 'r-o', label='Simulation BER')
+plt.semilogy(EbN0_dB, BPSK_Pb, 'b-*', label='Theoretical BER')
+plt.grid(True, which='both')
+plt.title("Bit error probability curve for BPSK using OFDM")
+plt.xlabel("$E_b/N_0$ (dB)")
+plt.ylabel("BER")
+plt.legend()
+
+# --------------------- 星座圖 (After Equalizer) --------------------- #
+plt.figure()
+plt.scatter(Dkr.real[:200], Dkr.imag[:200], c='r', marker='.')
+plt.title("Constellation (After Equalizer)")
+plt.grid(True)
+plt.show()
+```
 
 ---
 ## (II) 實驗二：BER 曲線繪製 (理想通道) - Result
