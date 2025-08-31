@@ -474,6 +474,7 @@ for Eb_N0 = 0:2:8
 
 
 ---
+### 1.2.5 Np
 
 ```matlab
 Np = Eb * 10^(-(Eb_N0/10));
@@ -489,20 +490,63 @@ $$
 * 在這裡 `Np` 代表 AWGN 的平均功率。
 
 ---
-
+### 1.2.6. AWGN
 ```matlab
 % ... 代表 續行符號 (line continuation)。
 ns = sqrt((64/52)*Np/2) * (randn(1,length(D_cp(:,:))*Nsymbol) ...
        + 1i*randn(1,length(D_cp(:,:))*Nsymbol));
 ```
 
-* 產生複數 AWGN：`randn + 1i*randn`。
-* 除以 `sqrt(2)` 讓實部、虛部各自有變異數 \$Np/2\$，總功率為 \$Np\$。
-* 前面的 `(64/52)`：修正因子，因為雖然有 64 個子載波，但只有 52 個用來傳資料，需做功率正規化。
-* 結果 `ns` 為符合功率分配的 AWGN。
+#### 🔹 1.2.6.1. AWGN 的理論
+
+在 **複數基頻模型**裡，若希望平均雜訊功率 = \$N\_p\$：
+$\mathbb{E}[|n|^2] = N_p$
+
+因為 \$n = n\_r + j n\_i\$，其中：
+
+* \$n\_r \sim \mathcal{N}(0,\sigma^2)\$
+* \$n\_i \sim \mathcal{N}(0,\sigma^2)\$
+
+所以：
+$\mathbb{E}[|n|^2] = \mathbb{E}[n_r^2] + \mathbb{E}[n_i^2] = 2\sigma^2$
+
+令 \$2\sigma^2 = N\_p\$，得到：
+$\sigma^2 = \tfrac{N_p}{2}$
+
+因此：
+$n = \sqrt{\tfrac{N_p}{2}} (X + jY), \quad X,Y \sim \mathcal{N}(0,1)$
+
+這就是「複數 AWGN 的產生方式」。
 
 ---
 
+####  1.2.6.2. 原程式碼
+
+```matlab
+ns = sqrt((64/52)*Np/2) * (randn(...) + 1i*randn(...));
+```
+
+這裡乘上的係數是：
+$\sqrt{\tfrac{(64/52)N_p}{2}}$
+
+換句話說，它產生的雜訊功率是：
+$\mathbb{E}[|ns|^2] = (64/52)N_p$
+
+---
+
+#### 🔹 1.2.6.3. 為什麼多了一個 (64/52)？
+
+這其實是 **OFDM 特有的 scaling**，並不是錯。
+
+原因：
+
+* 在一個 OFDM symbol 裡，用了 **64 個 FFT 點**，但只有 **52 個子載波承載資料**。
+* 若用「每 bit 能量 \$E\_b\$」來定義 SNR，平均到 64 點後，實際有效能量變小。
+* 因此要把雜訊功率乘上 \$(64/52)\$，確保模擬的 **\$E\_b/N\_0\$ 定義正確**。
+
+
+---
+### 1.2.7. Z[n]
 ```matlab
 z_nxh = xh(1:end) + ns;
 ```
