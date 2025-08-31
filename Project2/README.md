@@ -391,7 +391,7 @@ scatterplot(Dkr(1,1:104));
 ---
 ## (II) 實驗二：BER 曲線繪製 (理想通道) - Result
 
-![4](4.jpg]
+![4](4.jpg)
 
 ---
 
