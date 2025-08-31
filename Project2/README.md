@@ -1,5 +1,5 @@
 # 📡 行動通訊課程專案 #2
-<img src="1.jpg" alt="1" width="100%">
+<img src="diagram.jpg" alt="1" width="100%">
 
 ## 題目說明
 在這個專案中，我們要透過模擬實現一個 **OFDM 收發機**。  
