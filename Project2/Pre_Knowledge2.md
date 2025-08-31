@@ -428,15 +428,15 @@ $s \in \{+\sqrt{E_b}, -\sqrt{E_b}\}$
 
    使用零門檻判決，錯誤率為：
    
-   $P_b = Q\!\left(\sqrt{\tfrac{2E_b}{N_0}}\right)$
+   $P_b = Q\left(\sqrt{\tfrac{2E_b}{N_0}}\right)$
 
 (iii). **Q-function 與 erfc 的關係**：
    
-   $Q(x) = \tfrac{1}{2}\,\text{erfc}\!\left(\tfrac{x}{\sqrt{2}}\right)$
+   $Q(x) = \tfrac{1}{2}\,\text{erfc}\left(\tfrac{x}{\sqrt{2}}\right)$
 
    因此：
    
-   $P_b = \tfrac{1}{2}\,\text{erfc}\!\left(\sqrt{\tfrac{E_b}{N_0}}\right)$
+   $P_b = \tfrac{1}{2}\,\text{erfc}\left(\sqrt{\tfrac{E_b}{N_0}}\right)$
 
 ---
 
