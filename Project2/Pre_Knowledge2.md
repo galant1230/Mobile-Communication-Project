@@ -215,10 +215,10 @@ $P_b = Q\Big(\sqrt{\tfrac{2E_b}{N_0}}\Big)$
 $\text{erfc}(x) = \frac{2}{\sqrt{\pi}} \int_x^\infty e^{-t^2} dt$
 
 兩者關係：
-$Q(x) = \tfrac{1}{2} \ \text{erfc}\!\Big(\tfrac{x}{\sqrt{2}}\Big)$
+$Q(x) = \tfrac{1}{2} \ \text{erfc}\Big(\tfrac{x}{\sqrt{2}}\Big)$
 
 代入 \$x = \sqrt{\tfrac{2E\_b}{N\_0}}\$：
-$P_b = \tfrac{1}{2} \ \text{erfc}\!\Big(\sqrt{\tfrac{E_b}{N_0}}\Big)$
+$P_b = \tfrac{1}{2} \ \text{erfc}\Big(\sqrt{\tfrac{E_b}{N_0}}\Big)$
 
 ### ✅ 結論
 
