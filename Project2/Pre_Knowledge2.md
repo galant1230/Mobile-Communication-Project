@@ -209,8 +209,6 @@ $Q(x) = P(Z > x) = \frac{1}{\sqrt{2\pi}} \int_x^\infty e^{-t^2/2} dt$
 因此：
 $P_b = Q\Big(\sqrt{\tfrac{2E_b}{N_0}}\Big)$
 
----
-
 #### 7. Q-function 與 erfc 的關係
 
 互補誤差函數 (erfc) 定義：
@@ -222,14 +220,12 @@ $Q(x) = \tfrac{1}{2} \, \text{erfc}\!\Big(\tfrac{x}{\sqrt{2}}\Big)$
 代入 \$x = \sqrt{\tfrac{2E\_b}{N\_0}}\$：
 $P_b = \tfrac{1}{2} \, \text{erfc}\!\Big(\sqrt{\tfrac{E_b}{N_0}}\Big)$
 
----
-
 ### ✅ 結論
 
 BPSK 在 AWGN 通道下的錯誤機率：
-$P_b = Q\!\Big(\sqrt{\tfrac{2E_b}{N_0}}\Big)$
+$P_b = Q\Big(\sqrt{\tfrac{2E_b}{N_0}}\Big)$
 或等價寫成：
-$P_b = \tfrac{1}{2}\,\text{erfc}\!\Big(\sqrt{\tfrac{E_b}{N_0}}\Big)$
+$P_b = \tfrac{1}{2}\,\text{erfc}\Big(\sqrt{\tfrac{E_b}{N_0}}\Big)$
 
 ---
 
