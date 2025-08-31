@@ -491,6 +491,7 @@ $$
 ---
 
 ```matlab
+% ... 代表 續行符號 (line continuation)。
 ns = sqrt((64/52)*Np/2) * (randn(1,length(D_cp(:,:))*Nsymbol) ...
        + 1i*randn(1,length(D_cp(:,:))*Nsymbol));
 ```
