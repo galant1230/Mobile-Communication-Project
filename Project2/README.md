@@ -80,7 +80,7 @@ $$
 
 - 注意：需要將時域通道脈衝響應 $h[n]$ 轉換為頻域響應 $H_k$ (透過 FFT)。  
 ---
-## Matlab ver
+## Matlab Version
 ```matlab
 %% ==================== OFDM System Simulation (BPSK) ==================== %%
 clear all; close all; clc;
@@ -164,7 +164,113 @@ title('Constellation (After Equalization)');
 
 ```
 ---
+## Python Version
+```python
+import numpy as np
+import matplotlib.pyplot as plt
 
+# ==================== OFDM System Simulation (BPSK) ==================== #
+
+# -------------------- 系統參數設定 -------------------- #
+M = 64                  # FFT 點數
+sc = 52                 # 資料子載波數
+ofdmbit = 52            # 每個 OFDM symbol bits 數 (BPSK → bits = subcarrier)
+Nsymbol = 200           # 模擬符號數 (多一點讓星座圖更清楚)
+cp_len = 16             # 循環字首長度
+
+# -------------------- BPSK 調變 -------------------- #
+Data = np.random.randint(0, 2, ofdmbit * Nsymbol)
+dk = 2 * Data - 1                         # BPSK: 0→-1, 1→+1
+dk_sym = dk.reshape(sc, Nsymbol)          # Serial → Parallel
+
+# -------------------- 子載波配置 -------------------- #
+Dk = np.zeros((M, Nsymbol), dtype=complex)
+Dk[6:32, :]  = dk_sym[0:26, :]   # 左半部 26 個子載波 (注意 index)
+Dk[33:59, :] = dk_sym[26:52, :]  # 右半部 26 個子載波
+
+# -------------------- IFFT (轉到時域) -------------------- #
+IDFT = np.zeros((M, Nsymbol), dtype=complex)
+for i in range(Nsymbol):
+    IDFT[:, i] = np.fft.ifft(Dk[:, i], M)
+
+# -------------------- 加入循環字首 (CP) -------------------- #
+D_cp = np.zeros((M+cp_len, Nsymbol), dtype=complex)
+D_cp[0:cp_len, :] = IDFT[M-cp_len:M, :]    # 複製最後 cp_len 點
+D_cp[cp_len:, :]  = IDFT
+
+# -------------------- 通道模型 (多路徑衰落) -------------------- #
+h = np.array([0.5-0.5j, 0, 0.15+0.12j, 0, 0, -0.1+0.05j])
+h_n = h / np.linalg.norm(h)   # normalize
+
+# -------------------- 串列化並通過通道 -------------------- #
+# 串列化並通過通道 (注意 reshape 的順序)
+x_n = D_cp.reshape((M+cp_len) * Nsymbol, order='F')
+xh  = np.convolve(x_n, h_n)
+
+# -------------------- 加入 AWGN 雜訊 -------------------- #
+Eb_N0_dB = 20   # 可以改成 30 dB 試試
+Eb = np.mean(np.abs(x_n)**2)
+Np = Eb * 10**(-Eb_N0_dB/10)
+
+noise = np.sqrt(Np/2) * (np.random.randn(len(xh)-5) + 1j*np.random.randn(len(xh)-5))
+z_n = xh[0:len(xh)-5] + noise
+
+# -------------------- 移除循環字首 (CP Removal) -------------------- #
+# CP 移除 (也要用 order='F')
+receiver = z_n.reshape(M+cp_len, Nsymbol, order='F')
+rn = receiver[cp_len:, :]
+
+# -------------------- FFT (轉回頻域) -------------------- #
+DFT = np.zeros((M, Nsymbol), dtype=complex)
+for i in range(Nsymbol):
+    DFT[:, i] = np.fft.fft(rn[:, i], M)
+
+# -------------------- 移除虛零子載波 (刪掉 DC 與 Guard) -------------------- #
+Yk64 = np.vstack((DFT[6:32, :], DFT[33:59, :]))
+Yk52 = Yk64.flatten(order='F')   # column-major 展平 (與 MATLAB 一致)
+
+# -------------------- Equalizer (通道補償) -------------------- #
+Hn = np.fft.fft(h, M)
+Dk_eq = np.zeros((M, Nsymbol), dtype=complex)
+for i in range(Nsymbol):
+    Dk_eq[:, i] = DFT[:, i] / Hn
+
+# -------------------- 還原資料子載波 -------------------- #
+Dkreceiver = np.vstack((Dk_eq[6:32, :], Dk_eq[33:59, :]))
+Dkr = Dkreceiver.flatten(order='F')
+
+# -------------------- BER 計算 -------------------- #
+rx_bits_before = np.where(Yk52.real >= 0, 1, 0)
+rx_bits_after  = np.where(Dkr.real >= 0, 1, 0)
+
+BER_before = np.mean(rx_bits_before != Data[:len(rx_bits_before)])
+BER_after  = np.mean(rx_bits_after  != Data[:len(rx_bits_after)])
+
+print(f"BER Before Equalization: {BER_before:.4e}")
+print(f"BER After  Equalization: {BER_after:.4e}")
+
+# -------------------- 畫星座圖 -------------------- #
+plt.figure(figsize=(10,5))
+
+plt.subplot(1,2,1)
+plt.scatter(Yk52.real, Yk52.imag, s=5)
+plt.title(f'Constellation (Before Equalization)\nBER={BER_before:.2e}')
+plt.xlabel('In-Phase')
+plt.ylabel('Quadrature')
+plt.grid(True)
+
+plt.subplot(1,2,2)
+plt.scatter(Dkr.real, Dkr.imag, s=5)
+plt.title(f'Constellation (After Equalization)\nBER={BER_after:.2e}')
+plt.xlabel('In-Phase')
+plt.ylabel('Quadrature')
+plt.grid(True)
+
+plt.tight_layout()
+plt.show()
+```
+
+---
 ## (I) Result
 <img src="2.jpg" alt="2" width="50%">
 <img src="3.jpg" alt="3" width="50%">
