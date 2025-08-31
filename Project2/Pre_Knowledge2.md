@@ -624,4 +624,61 @@ ber(Eb_N0/2+1) = length(find(Dkre ~= dk)) / (52*Nsymbol);
 
 ---
 
+## 3. 繪圖程式解釋
+
+### 3.1. BER 曲線繪製
+
+```matlab
+semilogy((0:2:8), ber, 'r-o');
+hold on;
+semilogy((0:2:8), BPSK_Pb, 'b-*');
+hold on;
+grid on;
+title('Bit error probability curve for BPSK using OFDM');
+xlabel('E_b/N_0 (dB)');
+ylabel('BER');
+legend('Simulation BER','Theoretical BER');
+```
+
+**解釋：**
+
+* `semilogy`：繪製 **y 軸對數座標** 的折線圖，適合展示 BER。
+* `semilogy((0:2:8), ber, 'r-o')`：畫出模擬的 BER 曲線，紅色線條 + 圓圈。
+* `semilogy((0:2:8), BPSK_Pb, 'b-*')`：畫出理論 BER 曲線，藍色線條 + 星號。
+* `hold on`：讓多條曲線畫在同一張圖上。
+* `grid on`：開啟格線，方便觀察。
+* `title`, `xlabel`, `ylabel`：設定圖表標題與座標軸標籤。
+* `legend`：顯示圖例，分別標示「模擬結果」與「理論結果」。
+
+👉 這部分會產生一張 **BER 曲線圖**，比較模擬結果與理論公式。
+
+---
+
+### 3.2. 星座圖繪製
+
+```matlab
+%----------------- scatterplot (After Equalizer) -----------------------%
+scatterplot(Dkr(1,1:104));
+```
+
+**解釋：**
+
+* `Dkr`：接收端等化後的符號序列。
+* `Dkr(1,1:104)`：取前 104 個符號用來繪圖。
+* `scatterplot(...)`：MATLAB 通訊工具箱的內建函數，用來畫 **星座圖 (Constellation Diagram)**。
+
+👉 畫出 **接收符號分布**：
+
+* 理想情況下，點應該集中在 ±1（BPSK 星座點）。
+* 在有雜訊時，點會圍繞在 ±1 附近散佈，直觀顯示雜訊對符號的影響。
+
+---
+
+###  總結
+
+這段程式會生成兩張圖：
+
+1. **BER 曲線圖**：對比模擬與理論 BER 隨 \$E\_b/N\_0\$ 變化。
+2. **星座圖**：展示接收符號在星座圖上的散佈情形。
+
 
