@@ -193,7 +193,7 @@ $P_b = P(n > \sqrt{E_b})$
 $Z = \frac{n}{\sigma}, \quad Z \sim \mathcal{N}(0,1)$
 
 因此：
-$P(n > \sqrt{E_b}) = P\!\Bigg( \frac{n}{\sigma} > \frac{\sqrt{E_b}}{\sigma} \Bigg)$
+$P(n > \sqrt{E_b}) = P\Bigg( \frac{n}{\sigma} > \frac{\sqrt{E_b}}{\sigma} \Bigg)$
 
 #### 5. 代入 \$\sigma = \sqrt{N\_0/2}\$
 
@@ -207,7 +207,7 @@ $P(n > \sqrt{E_b}) = P(Z > \sqrt{\tfrac{2E_b}{N_0}})$
 $Q(x) = P(Z > x) = \frac{1}{\sqrt{2\pi}} \int_x^\infty e^{-t^2/2} dt$
 
 因此：
-$P_b = Q\!\Big(\sqrt{\tfrac{2E_b}{N_0}}\Big)$
+$P_b = Q\Big(\sqrt{\tfrac{2E_b}{N_0}}\Big)$
 
 ---
 
