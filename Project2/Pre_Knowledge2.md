@@ -50,25 +50,26 @@ $y(t) = \int r(\tau) \ h(t-\tau) \ d\tau$
 若選擇濾波器脈衝響應：
 $h(t) = s(T_b - t)$
 
-#####  2.1.1匹配濾波數學推導
+#####  2.1.1 匹配濾波數學推導
+
 - 代入 \$h(t)\$
 
 匹配濾波器的脈衝響應：
 $h(t) = s(T_b - t)$
 
 代入卷積公式：
-$y(t) = \int r(\tau) \, s(T_b - (t - \tau)) \, d\tau$
+$y(t) = \int r(\tau) \ s(T_b - (t - \tau)) \ d\tau$
 
 - 取樣在 \$t = T\_b\$
 
 關注取樣時刻 \$t = T\_b\$：
-$y(T_b) = \int r(\tau) \, s(T_b - (T_b - \tau)) \, d\tau$
+$y(T_b) = \int r(\tau) \ s(T_b - (T_b - \tau)) \ d\tau$
 
 裡面可以化簡：
 $s(T_b - (T_b - \tau)) = s(\tau)$
 
 因此：
-$y(T_b) = \int r(\tau) \, s(\tau) \, d\tau$
+$y(T_b) = \int r(\tau) \ s(\tau) \ d\tau$
 
 #### ✅ 結果意義
 
