@@ -168,24 +168,24 @@ $s \in \{+\sqrt{E_b}, -\sqrt{E_b}\}$
 
 ---
 
-#### 3. 為什麼不是兩個 bit？
+#### 1.2.3. 為什麼不是兩個 bit？
 
 * BPSK 只有 **兩個狀態 (±)**，所以只能表示 2 個可能值 → 也就是 **1 個 bit**。
 * 若要表示 2 bits 需要 4 個點（例如 QPSK，星座圖在四象限）。
 
----
-
-### ✅ 總結
+### 1.2. ✅ 總結
 
 * BPSK：一個符號 = 1 個 bit，符號點 = ±√Eb。
 * 若 \$E\_b = 1\$，則符號點 = ±1。
 * ±1 並不是兩個 bit，而是 **同一個 bit 的兩種可能值**。
 
-### 🔹 BPSK 在 AWGN 下的理論 BER
+---
+
+### 1.2.4 BPSK 在 AWGN 下的理論 BER
 
 在 **AWGN 通道**下，BPSK 的錯誤率公式為：
 
-1.1. **系統模型**：
+(i). **系統模型**：
 
    * 傳送 bit = 0 → \$+\sqrt{E\_b}\$
    * 傳送 bit = 1 → \$-\sqrt{E\_b}\$
@@ -193,13 +193,13 @@ $s \in \{+\sqrt{E_b}, -\sqrt{E_b}\}$
      
      $y = \pm\sqrt{E_b} + n, \quad n \sim \mathcal{N}(0, N_0/2)$
 
-1.2. **錯誤機率**：
+(ii). **錯誤機率**：
 
    使用零門檻判決，錯誤率為：
    
    $P_b = Q\!\left(\sqrt{\tfrac{2E_b}{N_0}}\right)$
 
-3. **Q-function 與 erfc 的關係**：
+(iii). **Q-function 與 erfc 的關係**：
    
    $Q(x) = \tfrac{1}{2}\,\text{erfc}\!\left(\tfrac{x}{\sqrt{2}}\right)$
 
