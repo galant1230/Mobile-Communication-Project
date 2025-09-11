@@ -72,7 +72,7 @@ $$
 定義包絡與相位：
 
 $$
-R = \sqrt{X^2+Y^2},\qquad \Theta=\operatorname{atan2}(Y,X).
+R = \sqrt{X^2+Y^2},\qquad \Theta=\mathrm{atan2}(Y,X).
 $$
 
 因 $X,Y$ 獨立且同為 $\mathcal N(0,\sigma^2)$，其聯合密度為
@@ -115,8 +115,8 @@ F_R(r)=1-\exp\!\left(-\frac{r^2}{2\sigma^2}\right),\quad r\ge0,
 $$
 
 $$
-\mathbb{E}[R]=\sigma\sqrt{\frac{\pi}{2}},\qquad
-\operatorname{Var}(R)=\left(2-\frac{\pi}{2}\right)\sigma^2.
+\mathbb{E}[R]=\sigma\sqrt{\tfrac{\pi}{2}},\qquad
+\mathrm{Var}(R)=\left(2-\tfrac{\pi}{2}\right)\sigma^2.
 $$
 
 ---
