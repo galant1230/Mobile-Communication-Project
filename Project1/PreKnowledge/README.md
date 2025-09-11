@@ -71,9 +71,9 @@ $$
 
 * **數學模型**：
 
-  $$
-  T(t) = E_0 \sum_{m=1}^N C_m e^{j(\cos \alpha_m \, \omega_d t + \phi_m)}
-  $$
+$$
+T(t) = E_0 \sum_{m=1}^N C_m e^{j(\cos \alpha_m \, \omega_d t + \phi_m)}
+$$
 
   * \$N\$：平面波數目（通常取 30 即可近似）
   * \$C\_m\$：權重 (\$C\_m^2 = 1/N\$)
