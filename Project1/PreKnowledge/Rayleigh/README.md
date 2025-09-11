@@ -47,14 +47,14 @@ $$
 $$
 
 $$
-\operatorname{Var}(X)=\sum_{k=1}^{L}\mathbb{E}[a_k^2]\cdot \mathbb{E}[\cos^2\phi_k]
-= \frac{1}{2}\sum_{k=1}^{L}\mathbb{E}[a_k^2],
+\mathrm{Var}(X)=\sum_{k=1}^{L}\mathbb{E}[a_k^2]\cdot \mathbb{E}[\cos^2\phi_k]
+= \tfrac{1}{2}\sum_{k=1}^{L}\mathbb{E}[a_k^2],
 $$
 
 $$
-\operatorname{Var}(Y)=\frac{1}{2}\sum_{k=1}^{L}\mathbb{E}[a_k^2],
+\mathrm{Var}(Y)=\tfrac{1}{2}\sum_{k=1}^{L}\mathbb{E}[a_k^2],
 \qquad
-\operatorname{Cov}(X,Y)=0.
+\mathrm{Cov}(X,Y)=0.
 $$
 
 當 $L$ 很大（許多獨立小貢獻），由**中心極限定理**可得
