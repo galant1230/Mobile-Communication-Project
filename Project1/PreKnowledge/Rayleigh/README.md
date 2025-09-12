@@ -22,9 +22,9 @@ $$
 把實部與虛部分開：
 
 $$
-X \;=\; \sum_{k=1}^{L} a_k \cos\phi_k, 
+X \=\ \sum_{k=1}^{L} a_k \cos\phi_k, 
 \qquad
-Y \;=\; \sum_{k=1}^{L} a_k \sin\phi_k.
+Y \=\ \sum_{k=1}^{L} a_k \sin\phi_k.
 $$
 
 因為 $\phi_k$ 均勻且與 $a_k$ 獨立，有
