@@ -549,6 +549,237 @@ $$
 | Rician Fading   | 有 LOS    | Rician 分布   | K-factor（強 LOS） |
 
 ---
+# 4. Ber Vs Ebno Analysis
+```matlab
+% -------------------- 先處理參數 ------------------------
+clear all; close all;
+n=32;                   % 資料數
+Ts=1e-3;                % sampling time
+T=2*1e-3;               % time
+landa=0.15;             % wavelength (lambda)
+v=60000/3600;           % velocity (m/s)
+N=8;                    % number of scatterers
 
+% -------------------- 隨機產生 binary source ------------------------
+x=rand(1,n);            % 原始 bit stream
+d=sign(x-0.5);          % 轉為 +1/-1 binary 資料
+
+% -------------------- 產生 Jakes 模型 h(t) ------------------------
+Cm=sqrt(1/N);
+wn=2*pi*v/landa;        % 角都卜勒頻率
+h_t=zeros(1,T/Ts);
+for m=0:N-1
+    am=2*pi*m/N;
+    q=rand(1,1); % random 相位
+    h_tmp=Cm*exp(j*(cos(am)*wn*(Ts:Ts:T)+q));
+    h_t=h_t+h_tmp;
+end
+h=h_t./max(abs(h_t));   % normalize
+
+% -------------------- 產生 Rayleigh 通道 (高斯分佈) ------------------------
+ray_tmp=randn(1,T/Ts)+j*randn(1,T/Ts);
+r=ray_tmp/max(abs(ray_tmp));
+
+% -------------------- 模擬傳輸 ------------------------
+xt=r.*d;                % Rayleigh 模型乘上資料
+xh=h.*d;                % Jakes 模型乘上資料
+
+% -------------------- 模擬通道 + AWGN ------------------------
+for snr=1:6
+    xh=awgn(xh,snr,'measured');
+    xr=awgn(xt,snr,'measured');
+
+    % receiver 端做 equalization
+    yh=conj(h).*xh;           % 解調 (Jakes)
+    yr=conj(r).*xr;           % 解調 (Rayleigh)
+
+    % 判斷符號
+    yhd=sign(real(conj(h).*xh));
+    yrd=sign(real(conj(r).*xr));
+
+    % 計算 BER
+    [~,ratio_h]= symerr(d,yhd);
+    [~,ratio_r]= symerr(d,yrd);
+
+    ber_h(n)=ratio_h;
+    ber_r(n)=ratio_r;
+end
+
+% -------------------- 畫圖 ------------------------
+figure
+subplot(2,1,1);
+x_axe=1:6;
+semilogy(x_axe,ber_h,'r.-');
+title('BER (Jakes model)');
+xlabel('SNR (dB)'); ylabel('BER');
+
+subplot(2,1,2);
+semilogy(x_axe,ber_r,'b.-');
+title('BER (Rayleigh model)');
+xlabel('SNR (dB)'); ylabel('BER');
+
+% 比較圖
+figure;
+semilogy(x_axe,ber_h,'r-o',x_axe,ber_r,'b-o');
+legend('jakes','rayleigh');
+xlabel('SNR(dB)'); ylabel('BER');
+grid on;
+```
+
+---
+
+## ：BER vs Eb/No 模擬
+
+### 📌 模型設定區段（對應理論公式）
+
+```matlab
+Ts=1e-3;         % 取樣時間 ∆t
+T=2*1e-3;        % 總模擬時間 T
+N=8;             % 散射體數目（路徑數）
+v=60000/3600;    % 使用者移動速度 v (m/s)
+fc=3.5*10^9;     % 頻率 fc
+landa=3e8/fc;    % 波長 λ = c/f
+```
+
+### 🔹 對應理論：
+
+**都卜勒頻率：**
+
+$$
+f_D = \frac{v}{c}f_c \quad \Rightarrow \quad \omega_D = 2\pi f_D = \frac{2\pi v}{\lambda}
+$$
+
+這邊的 `wn = 2*pi*v/landa` 對應的就是都卜勒角頻率
+
+---
+
+### 📌 通道產生 (Jakes 模型)
+
+```matlab
+for m=0:N-1
+    am=2*pi*m/N;
+    q=rand(1,1);   % 隨機相位
+    h_tmp=Cm*exp(j*(cos(am)*wn*(Ts:Ts:T)+q));
+    h_t=h_t+h_tmp;
+end
+```
+
+**對應公式：**
+
+Jakes 模型的 channel impulse response (無 LOS)：
+
+$$
+h(t) = \sum_{m=1}^{N} C_m e^{j(\omega_D \cos\alpha_m t + \phi_m)}
+$$
+
+其中：
+
+* \$C\_m = \frac{1}{\sqrt{N}}\$
+* \$\alpha\_m = \frac{2\pi m}{N}\$
+* \$\phi\_m \sim \text{Unif}(0,2\pi)\$
+
+---
+
+### 📌 正規化處理
+
+```matlab
+h=h./max(abs(h_t));
+```
+
+📈 為了讓所有的 fading 都有統一平均力量
+
+---
+
+### 📌 建立高斯隨機通道 (Rayleigh 分佈)
+
+```matlab
+ray_tmp=randn(1,T/Ts)+j*randn(1,T/Ts);
+r=ray_tmp/max(abs(ray_tmp));
+```
+
+**對應理論：**
+
+Rayleigh fading 模型定義：
+
+$$
+h(t) = X(t) + jY(t),\quad X,Y \sim \mathcal{N}(0,\sigma^2)
+$$
+
+其 envelope \$|h(t)|\$ 會呈 Rayleigh 分佈
+
+---
+
+### 📌 BER 模擬
+
+```matlab
+d=sign(rand(1,n)-0.5);    % binary source: ±1
+x=r.*d;                   % Rayleigh
+x=h.*d;                   % Jakes
+```
+
+模擬輸入資料經通道處理
+
+---
+
+### 📌 加上噪聲 + 解讀
+
+```matlab
+xh=awgn(xt,snr,'measured');
+```
+
+對應理論公式：
+
+$$
+y(t) = h(t)x(t) + n(t)
+$$
+
+受 noise 影響
+
+```matlab
+yh=conj(h).*xh;
+yhd=sign(real(yh));
+```
+
+對應二項法的 channel equalization
+
+---
+
+### 📌 错誤率計算
+
+```matlab
+[number_h,ratio_h] = symerr(d,yhd);
+[number_r,ratio_r] = symerr(d,yrd);
+```
+
+BER 公式：
+
+$$
+BER = \frac{\text{number of error bits}}{\text{total transmitted bits}}
+$$
+
+---
+
+### 📊 圖表呈現
+
+```matlab
+semilogy(x_axe,ber_h,'r-o'); % Jakes
+semilogy(x_axe,ber_r,'b-o'); % Rayleigh
+legend('jakes','rayleigh');
+```
+
+semilogy 用於 y-axis 為 log-scale
+
+---
+
+### ✅ 小結分析
+
+| 項目            | 對應模型          | 影響說明                    |
+| ------------- | ------------- | ----------------------- |
+| `h_t`         | Jakes         | 模擬 multipath fading     |
+| `ray_tmp`     | Rayleigh      | 理想 Gaussian 通道          |
+| `x = h.*d`    | channel input | 通道影響輸入                  |
+| `awgn()`      | noise         | 加入 AWGN                 |
+| `conj(h).*xh` | equalization  | 使用 channel estimate 做解碼 |
+| `symerr()`    | BER           | 算計誤碼率                   |
 
 
