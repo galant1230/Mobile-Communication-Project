@@ -1,553 +1,140 @@
-# 1. 🌊 Jakes Model 與 Gaussian Rayleigh 的對應與實作筆記
+### 四個結果圖總結
+
+| 區塊位置 | 模型                     | 圖片內容    | 設定條件                            |
+| ---- | ---------------------- | ------- | ------------------------------- |
+| 左上   | Gaussian Rayleigh      | PDF 直方圖 | T=1、N=8、v=60km/h                |
+| 右上   | Rayleigh fading（含 LOS） | 時域變化圖   | T=1、N=8、v=60km/h、k=2 (K-factor) |
+| 左下   | Jakes Model            | PDF 直方圖 | 同上                              |
+| 右下   | Jakes Model            | 時域變化圖   | 同上                              |
 
 ---
 
-### 🧠 主要目的：
+### ✅ 差異分析
 
-用 **Jakes model** 模擬時間變化的 **Rayleigh fading**（即通道係數 $h(t)$ 隨時間變化的隨機過程）。
+#### 1. 左上 Gaussian Rayleigh PDF vs 左下 Jakes PDF
 
-### Jakes Model 簡介
+* **左上（Gaussian Rayleigh）** 符合理論 Rayleigh 分布，滑順單峰形狀。
+* **左下（Jakes 模擬）** 會看到抖動、多峰、不連續，這是因為：
 
-* **用途**：用於模擬移動通訊中的 **時間相關 Rayleigh 衰落**。
+  * 散射角數 N=8 太小，不夠逼近中心極限定理。
+  * 相位未完全隨機，可能造成 constructive/destructive interference。
 
-* **核心想法**：
+✅ **解法**：提高 N 至 30 或 100，會更像 Rayleigh 理論曲線。
 
-  * 把接收信號看成許多不同角度的平面波疊加。
-  * 每個平面波因為移動造成 **多普勒效應**，頻率略有偏移。
-  * 疊加後形成一個隨機但有時間相關性的信號。
+#### 2. 右上 vs 右下 的時域波形比較
 
-* **數學模型**：
+* **右上** 明顯是 Rician Fading 的樣子（因為有 K=2）
 
-$$
-T(t) = E_0 \sum_{m=1}^N C_m e^{j(\cos \alpha_m \, \omega_d t + \phi_m)}
-$$
+  * 包絡波動「不會到 0」→ 有一條穩定直視徑（LOS）在。
+  * 因此 dips 較淺，顯示的是 **Rician fading**。
 
-  * \$N\$：平面波數目（通常取 30 即可近似）
-  * \$C\_m\$：權重 (\$C\_m^2 = 1/N\$)
-  * \$\alpha\_m\$：到達角度，假設均勻分佈
-  * \$\omega\_d = 2\pi f\_d\$：最大多普勒頻率
-  * \$\phi\_m\$：隨機初始相位
-    
----
+* **右下** 則是 Jakes Rayleigh 模型：
 
-## 🧪 為什麼 Jakes 模型的 Envelope 是 Rayleigh？
-
-> 這個複數總和公式長得跟 Rayleigh 分布好像不太一樣，為什麼取絕對值之後就會是 Rayleigh？
-
-讓我們一步步解析：
-
-### 📌 Step 1：Jakes 模型公式
-
-$$
-T(t) = E_0 \sum_{m=1}^{N} C_m e^{j(\cos \alpha_m \, \omega_d t + \phi_m)}
-$$
-
-我們關心的是其 **envelope**：
-
-$$
-|T(t)| = \left| \sum_{m=1}^N C_m e^{j(\cos \alpha_m \omega_d t + \phi_m)} \right|
-$$
+  * 波動範圍更大（有 deep fading），代表沒有直視徑，只有多徑。
 
 ---
 
-### 📌 Step 2：轉換為實部與虛部的總和
+## 📡 Rayleigh Fading Channel 模擬與分析筆記
 
-利用歐拉公式：
+### 🎯 模擬目的
 
-$$
-e^{j\theta} = \cos(\theta) + j \sin(\theta)
-$$
-
-所以總和變成：
-
-$$
-T(t) = \sum C_m \cos(\psi_m(t)) + j \sum C_m \sin(\psi_m(t))
-$$
-
-其中 $\psi_m(t) = \cos \alpha_m \, \omega_d t + \phi_m$
+* 比較 **Jakes Model** 與 **Gaussian Rayleigh** 的 fading 特性
+* 分析在改變不同參數（T、v、N）下，fading 行為與分布的變化
 
 ---
 
-### 📌 Step 3：中心極限定理（CLT）應用
+## 🔍 模擬模型說明
 
-若：
+### ✅ Gaussian Rayleigh Model
 
-* $\phi_m \sim \text{Uniform}(0,2\pi)$
-* $\alpha_m$ 多方向分布 → 對應不同 Doppler
-* $C_m = 1/\sqrt{N}$（或常數）
+* 實作：實部與虛部為獨立高斯分佈 N(0,σ²/2)
+* 結果：|c| 服從 Rayleigh 分布
+* 屬於「**統計建模**」，非物理建模
 
-則：
+### ✅ Jakes Model
 
-* $\text{Re}(T(t)) \sim \mathcal{N}(0,\sigma^2)$
-* $\text{Im}(T(t)) \sim \mathcal{N}(0,\sigma^2)$
-
-因為是很多獨立小分量的總和，根據中心極限定理會趨近 Gaussian！
-
----
-
-### 📌 Step 4：複數 Gaussian 取絕對值會變成 Rayleigh
-
-$$
-|T(t)| = \sqrt{\text{Re}(T(t))^2 + \text{Im}(T(t))^2} \sim \text{Rayleigh}(\sigma)
-$$
-
-這正是 Rayleigh 分布的定義：兩個獨立高斯隨機變數（均值 0）組合成的長度。
-   
----
-
-## 📌 原始 MATLAB 程式碼（Jakes model + Gaussian Rayleigh 對比）
-
-```matlab
-clc;clear;close all;
-%------------------先給定參數--------------------%
-T=1;                        % 錄時間長 T=1，若設太多，例如100則電腦無法負荷停量
-delta_t=0.000001;           % 以下為總時間所佔的微度
-N=30;
-f=3.5*10^9;
-c=3*10^8;
-Eo=sqrt(2);
-v=(60000)/3600;             % 先換成(m/s)較為常用的單位
-landa=c/fc;
-t=0:delta_t:T;              % 以下為所使用的時間範圍(1/m)
-n=0:1:N-1;
-m=0:1:N-1;
-cn=msqrt(1/N);              % 以下為baseband representation的參數表示
-w_m=(2*pi*v)/landa;
-rfa_m=(2*pi*m)/N;
-
-%------------------計算Jakes's model的h(t)--------------------%
-for i=1:N                     % 用for來重Tisigama運算
-    phi_m=2*pi*rand(1,1);     % 代表的是uniform distribution
-    h(i,:)=cn*exp(j*(cos(rfa_m(i))*w_m*n'+phi_m));
-end
-h_t=Eo*sum(h);
-
-%------------------計算Jakes's rayleigh fading pdf--------------------%
-A=abs(h_t);                   % 取絕對值
-[a_h,y]=hist(A,h_y);         % hist指令將整體資料依長度大小分為組，各組件中之數目作為繪圖之根據。
-p_a_h=a_h./(sum(a_h)*(0.1)); % 每個bin寬是0.1 → 統一一個相相乘 [2 3].*2 [2 3 4]  本行是要算密度
-
-%------------------再算 Gaussian rayleigh fading pdf--------------------%
-var=1;
-c=sqrt(var/2)*(randn(1,1000000)+j*randn(1,1000000)); % 產生一般的complex Gassion
-a_c=abs(c);
-y_c=[0:0.1:10];
-[a_c_y,c_y]=hist(a_c,y_c);
-p_a_c=a_c./(sum(a_c)*(0.1));
-
-%------------------此處為計算平均值與變異數--------------------%
-mean_c=mean(c);mean_h_t=mean(h_t);
-var_c=std(c)^2;var_h_t=std(h_t).^2;
-mean_A_c=mean(A);mean_A_h=mean(A_h);
-var_A_c=std(A_c)^2;var_A_h=std(A_h).^2;
-
-%------------------繪圖顯示--------------------%
-figure(1);
-plot(y,p_a_h,'c',y_c,p_a_c,'r--');     % 將Gausison Rayleigh使用紅色虛線表示
-xlabel('h(t)/var');ylabel('P(h(t)/var)');
-title('Normalized PDF of Gaussian rayleigh and Jakes rayleigh');
-legend('Jakes rayleigh','Gaussian rayleigh')
-axis([0 4.5 0 1])
-
-figure(2);
-hist(A,h_y);title('Histogram of Jakes rayleigh');
-xlabel('frequency');
-ylabel('Number of Hits');
-axis([0 4.5 0 10^5])
-
-figure(3);
-hist(A_c,y_c);title('Histogram of Gaussian rayleigh');
-xlabel('|y(t)|');ylabel('frequency');
-axis([-0.5 4.5 0 10^5]);
-```
+* 實作：模擬 N 條路徑，每條有不同入射角與 Doppler shift
+* 相位角 \$,\phi\_k \sim \mathcal{U}(0,2\pi)\$，頻率偏移 \$\omega\_k = 2\pi f\_D \cos(\theta\_k)\$
+* 屬於「**物理建模**」
 
 ---
 
-### 📌 Part 1 : 參數
+## 🧪 實驗內容與觀察
 
-```matlab
-clc; clear; close all;
+### 1️⃣ 改變 **T = 1 → 1.5s**（延長觀察時間）
 
-%------------------先給定參數--------------------%
-T = 1;                         % 總模擬時間 T（秒）
-delta_t = 0.000001;            % 時間間隔 Δt（秒） → 影響時間解析度
-N = 30;                        % 散射路徑數 N
-f = 3.5*10^9;                  % 頻率 f（Hz）
-c = 3*10^8;                    % 光速（m/s）
-Eo = sqrt(2);                  % 正規化能量（後面乘在總和上）
-v = 60000/3600;                % 移動速度（km/hr → m/s）
+| 條件 | N=8，v=60km/hr |
+| -- | ------------- |
 
-landa = c / f;                % 波長 λ = c / f
+#### 結果：
 
-% 時間軸定義，從 0 到 T，以 delta_t 為間隔
-% 會產生一個時間序列，用來觀察 fading 過程
+* 分布圖更平滑 → 更接近理論 Rayleigh 分布
+* fading time waveform 變得更連續（取樣更密）
+* Gaussian Rayleigh 衰減變平坦
+* Jakes model 衰減更密集但平滑
 
-t = 0:delta_t:T;              
-
-% 基底向量 index（for multiple path sum）
-n = 0:1:N-1;                  % 對應時間序列樣本 index
-m = 0:1:N-1;                  % 用來產生不同方向與相位的 index
-
-% baseband representation 的係數正規化常數
-cn = sqrt(1/N);               % 每個散射路徑的功率平均化（均分能量）
-
-% 計算最大 Doppler 頻率：w_m = 2πf_D
-w_m = (2*pi*v) / landa;       % Doppler spread（與移動速度、波長有關）
-
-% 將每條路徑的角度轉換成參數化角度 rfa_m
-rfa_m = (2*pi*m) / N;         % 均勻分佈於 [0, 2π) 範圍內
-```
+👉 **延長 T 可減少統計誤差，更接近真實分布**
 
 ---
 
-### ✅ 對應到 Jakes 模型公式：
+### 2️⃣ 改變速度 **v = 60 → 45 km/hr**
 
-Jakes 模型完整表達式：
+| 條件 | N=8，T=1s |
+| -- | -------- |
 
-$$
-T(t) = E_0 \sum_{m=1}^N C_m e^{j(\cos\alpha_m \omega_d t + \phi_m)}
-$$
+#### 結果：
 
-| MATLAB 變數  | 對應參數       | 說明                   |
-| ---------- | ---------- | -------------------- |
-| `Eo`       | $E_0$      | 輸出能量放大因子             |
-| `cn`       | $C_m$      | 每條路徑的權重（通常平均）        |
-| `rfa_m(i)` | $\alpha_m$ | 每條路徑的角度（經由 index 均分） |
-| `w_m`      | $\omega_d$ | 最大 Doppler 頻率        |
-| `phi_m`    | $\phi_m$   | 初始相位（隨機）             |
-| `t`, `n`   | $t$        | 時間序列                 |
+* 較慢速度 → Doppler shift 減少
+* fading 的波動頻率變小
+* deep fading 間隔變大
 
-這段 code 就是完整對應上面公式中每一項的初始化步驟。
-
----
-### 📌 Part 2 : 計算 Jakes 的 h(t) 
-
-```markdown
-%------------------計算 Jakes 的 h(t) --------------------%
-for i = 1:N
-    phi_m = 2*pi*rand(1,1);                       % 初始隨機相位 φ_m ∈ [0, 2π)
-    h(i,:) = cn * exp(j*(cos(rfa_m(i))*w_m*n' + phi_m));
-end
-h_t = Eo * sum(h);                                % 將所有 N 條路徑相加後乘上能量因子
-```
+👉 **v 小 → fading 頻率變小 → 衰減間距變大**
 
 ---
 
-### ✅ 對應到 Jakes 模型公式：
+### 3️⃣ 改變多徑數量 **N = 8 → 20 → 30**
 
-回顧 Jakes 模型核心公式：
+| 條件 | T=1s，v=60km/hr |
+| -- | -------------- |
 
-$$
-T(t) = E_0 \sum_{m=1}^{N} C_m e^{j(\cos\alpha_m \, \omega_d t + \phi_m)}
-$$
+#### 結果：
 
-這段程式碼對應如下：
+* Jakes model 在 N=20/30 時分布圖明顯更接近 Rayleigh
+* time waveform 更穩定，波動更平滑
+* Deep fading 減少
 
-| MATLAB 程式碼                         | 對應公式項                                 | 說明                  |
-| ---------------------------------- | ------------------------------------- | ------------------- |
-| `phi_m = 2*pi*rand(1,1);`          | $\phi_m \sim \text{Uniform}(0, 2\pi)$ | 每條路徑隨機初始相位          |
-| `cos(rfa_m(i)) * w_m * n' + phi_m` | $\cos\alpha_m \, \omega_d t + \phi_m$ | 多徑方向造成不同 Doppler 偏移 |
-| `exp(j*(...))`                     | $e^{j(...)}$                          | 複數正弦波（旋轉向量）         |
-| `h(i,:) = cn * exp(...)`           | $C_m e^{j(...)}$                      | 每條路徑帶有相同權重 C\_m     |
-| `h_t = Eo * sum(h);`               | $E_0 \sum_{m=1}^{N} ...$              | 最後的通道係數是所有路徑加總      |
+👉 **N ↑ → 相位總合越趨近高斯 → 中心極限定理效果 → 越像 Rayleigh**
 
 ---
 
-## Part 3 : Jakes model + Gaussian Rayleigh 對比
+### 4️⃣ 附加 fading waveform（k=2）
 
-```matlab
-%------------------計算 Jakes 的 Rayleigh fading PDF --------------------%
-A = abs(h_t);                           % 對複數通道係數取絕對值 → 得到 fading 包絡
-[a_h, y] = hist(A, h_y);               % 將 A 資料分成區間 (bin)，得到直方圖
-p_a_h = a_h ./ (sum(a_h) * 0.1);       % 將直方圖正規化成機率密度函數（PDF），bin 寬為 0.1
+* 顯示不同組合下的 fading magnitude 隨時間變化
+* 比較 Gaussian vs Jakes model
 
-%------------------計算 Gaussian Rayleigh fading PDF --------------------%
-var = 1;                                % 設定變異數
-c = sqrt(var/2) * (randn(1,1000000) + j*randn(1,1000000));
-                                       % 產生複數 Gaussian 隨機變數，實虛部獨立
+#### 結果：
 
-a_c = abs(c);                          % 取 magnitude 得到 Rayleigh 分布樣本
-
-y_c = 0:0.1:10;                         % 分割範圍
-[a_c_y, c_y] = hist(a_c, y_c);         % 建立直方圖
-p_a_c = a_c_y ./ (sum(a_c_y) * 0.1);   % 正規化成機率密度函數（PDF）
-```
+* Gaussian: 看起來較隨機
+* Jakes: 頻率固定感強，波峰密集
 
 ---
 
-### ✅ 對應說明：
+## 🧠 總結表格
 
-#### Jakes 模型部分：
-
-這裡從前面建構好的時間序列通道係數 `h_t`，
-經由：
-
-```matlab
-A = abs(h_t)
-```
-
-取得其包絡 → **這就是 Rayleigh fading** 的樣本。
-
-再使用 `hist()`：
-
-* 對這些樣本作統計，計算落在每個 bin 區間的數量
-* 除以總樣本數與 bin 寬，即可正規化為 PDF
+| 參數變化    | 結果觀察                          | 結論            |
+| ------- | ----------------------------- | ------------- |
+| **T ↑** | 分布收斂穩定，波動平滑                   | 統計性質穩定，接近理論   |
+| **v ↑** | Doppler 增，加快衰減頻率              | fade 間隔變短，較擁擠 |
+| **N ↑** | Jakes 趨近 Rayleigh，waveform 平滑 | 相位混合多，類高斯     |
 
 ---
 
-#### Gaussian 模型部分：
+### ✅ 模擬驗證了：
 
-這部分直接產生理論上的 Rayleigh 分布：
-
-* 複數數列 `c = x + jy`，其中 x, y 為獨立高斯
-* 取其 `abs(c)` 得到 Rayleigh 分布
-
-這裡的 `1000000` 是樣本數，越大越接近理論曲線。
+* Jakes Model 可合理逼近 Rayleigh 分布（在 N 夠大時）
+* Gaussian Rayleigh 是統計建模但能快速模擬
+* 通道參數對 fading 行為有顯著影響
 
 ---
 
-| 模型                | 建構方式                        | 分布類型              |
-| ----------------- | --------------------------- | ----------------- |
-| Jakes 模型          | 多徑複數正弦和，取 envelope          | Rayleigh-like（實測） |
-| Gaussian Rayleigh | 實部虛部獨立 Gaussian，取 magnitude | Rayleigh（理論）      |
-
----
-##  Part 4 : Figure
-```matlab
-%------------------此處為計算平均值與變異數--------------------%
-mean_c = mean(c); % 複數 Gaussian 模型的均值（理論上應接近 0）
-mean_h_t = mean(h_t); % Jakes 模型的均值（理論上應接近 0）
-
-
-var_c = std(c)^2; % 複數 Gaussian 模型的變異數
-var_h_t = std(h_t).^2; % Jakes 模型的變異數
-
-
-mean_A_c = mean(a_c); % Gaussian Rayleigh 包絡的均值（理論上 = √(π/2)）
-mean_A_h = mean(A); % Jakes Rayleigh 包絡的均值（模擬值）
-
-
-var_A_c = std(a_c)^2; % Gaussian Rayleigh 包絡的變異數（理論上 = (4 - π)/2）
-var_A_h = std(A).^2; % Jakes Rayleigh 包絡的變異數（模擬值）
-
-
-%------------------繪圖顯示--------------------%
-figure(1);
-plot(y, p_a_h, 'c', y_c, p_a_c, 'r--'); % 將 Jakes Rayleigh 與 Gaussian Rayleigh 的 PDF 畫在同一張圖
-xlabel('h(t)/var');
-ylabel('P(h(t)/var)');
-title('Normalized PDF of Gaussian rayleigh and Jakes rayleigh');
-legend('Jakes rayleigh', 'Gaussian rayleigh');
-axis([0 4.5 0 1]);
-
-
-figure(2);
-hist(A, h_y); % Jakes 模型的 Rayleigh 包絡直方圖
-xlabel('frequency');
-ylabel('Number of Hits');
-title('Histogram of Jakes rayleigh');
-axis([0 4.5 0 1e5]);
-
-
-figure(3);
-hist(a_c, y_c); % Gaussian 模型的 Rayleigh 包絡直方圖
-xlabel('|y(t)|');
-ylabel('frequency');
-title('Histogram of Gaussian rayleigh');
-axis([-0.5 4.5 0 1e5]);
-```
-
----
-## 🌊 Jakes Model 與 Gaussian Rayleigh 的對應與實作筆記
-
----
-
-### 🧠 主要目的：
-
-用 **Jakes model** 模擬時間變化的 **Rayleigh fading**（即通道係數 $h(t)$ 隨時間變化的隨機過程）。
-
----
-
-## 📌 補充模型：另一種 Rayleigh Fading 模擬法（圖三）
-
-以下是另一份 MATLAB 實作，使用幾何方式模擬散射波的相位差，形成 Rayleigh fading：
-
-```matlab
-clc; clear; close all;
-
-%------------------ 先給定參數 ------------------%
-n = 30;                           % number of scatterers
-c = sqrt(1/n);                    % 每條路徑平均能量分配
-Eo = 1;                           % 波的總能量
-v = (60000)/3600;                 % 移動速度 (m/s)
-fc = 3.5*10^9;                    % 頻率 (Hz)
-landa = 3*10^8 / fc;              % 波長 λ
-
-d = 1:n;
-wn = 2 * pi * v / landa;          % 最大 Doppler 角頻率
-phi = 2 * pi * (d - 1) / n;       % 均勻分佈的入射角
-
-t = 0:0.000001:1;                 % 時間序列
-
-theta = (2 * pi) * rand(1, n);    % 每條路徑的隨機相位 θ_k
-
-xc = Eo * c * cos(wn * t);        % 初始化：實部
-xs = zeros(1, length(xc));        % 初始化：虛部
-
-%------------------ 計算信號總和 ------------------%
-for k = 1:n
-    xc = xc + c * cos(cos(phi(k)) * wn * t + theta(k));   % 加總每個路徑的實部
-    xs = xs + c * sin(cos(phi(k)) * wn * t + theta(k));   % 加總每個路徑的虛部
-end
-
-ag = abs(xc + sqrt(-1) * xs);     % 得到 Rayleigh 包絡（取 magnitude）
-
-%------------------ 繪圖 ------------------%
-hist(ag, 300);
-ylabel('Number of Hits');
-xlabel('Magnitude');
-
-figure(2);
-semilogy(0.000001*(1:100000), ag(1:100000));
-xlabel('Time');
-ylabel('Magnitude (dB)');
-```
-
----
-
-### ✅ 對應數學公式：
-
-這裡對應的基本模型公式為：
-
-$$
-T(t) = \sum_{k=1}^{N} A_k e^{j(\omega_d \cos(\phi_k) t + \theta_k)}
-$$
-
-拆成實部與虛部：
-
-$$
-\text{Re}[T(t)] = \sum A_k \cos(\omega_d \cos\phi_k t + \theta_k) \\
-\text{Im}[T(t)] = \sum A_k \sin(\omega_d \cos\phi_k t + \theta_k)
-$$
-
-包絡為：
-
-$$
-|T(t)| = \sqrt{\text{Re}^2 + \text{Im}^2} \sim \text{Rayleigh}
-$$
-
----
-
-### 📌 對應說明表格：
-
-| MATLAB 變數        | 數學符號       | 說明                   |   |                      |
-| ---------------- | ---------- | -------------------- | - | -------------------- |
-| `n`              | $N$        | 散射路徑數                |   |                      |
-| `phi(k)`         | $\phi_k$   | 第 k 條路徑的入射角          |   |                      |
-| `theta(k)`       | $\theta_k$ | 初始相位（隨機）             |   |                      |
-| `wn`             | $\omega_d$ | 最大 Doppler shift     |   |                      |
-| `cos(phi(k))*wn` | $\omega_k$ | 每條路徑的 Doppler offset |   |                      |
-| `ag = abs(...)`  | (          | T(t)                 | ) | 總包絡 → 應為 Rayleigh 分布 |
-
----
-
-### 🧪 與前面 Jakes Model 相比：
-
-| 項目     | Jakes Model             | 幾何散射模型（本段）         |
-| ------ | ----------------------- | ------------------ |
-| 路徑相位建模 | 統一相位與方向參數               | 使用角度 `phi(k)` 明確建模 |
-| 實虛部構成  | 直接複數旋轉向量累加              | 拆實部與虛部，顯式加總        |
-| 調變方式   | $\cos(\alpha) \omega t$ | 同上                 |
-| 結果包絡   | Rayleigh 分布（模擬驗證）       | Rayleigh 分布（模擬驗證）  |
-
----
-
-## 📌 3. 模型：Rician Fading Channel 模擬（有 LOS 成分）
-
-以下 MATLAB 程式碼為模擬具有直視路徑 (Line-of-Sight, LOS) 的 **Rician Fading Channel**：
-
-```matlab
-clc; clear; close all;
-
-%------------------先給定參數--------------------%
-n = 30;                              % 散射路徑數
-c = sqrt(1/n);                       % 每條路徑平均能量分配
-km = 2;                              % K-factor（線性）
-kf = 10*log10(km);                   % K-factor（dB）
-Eo = 1;                              % 總能量
-A = sqrt(2 * kf * Eo^2);             % LOS 分量的振幅
-v = 60000 / 3600;                    % 移動速度 (m/s)
-fc = 3.5*10^9;                       % 頻率 (Hz)
-landa = 3e8 / fc;                    % 波長
-
-d = 1:n;
-wn = 2 * pi * v / landa;            % 最大 Doppler shift
-phi = 2 * pi * (d - 1) / n;          % 均勻分佈角度
-
-t = 0:0.000001:1;
-theta = 2*pi*rand(1, n);            % 每條路徑隨機相位
-
-xc = Eo * c * cos(wn * t);          % 初始化實部
-xs = zeros(1, length(xc));          % 初始化虛部
-xm = zeros(1, length(xc));          % 初始化 LOS 分量
-
-%------------------加總多徑分量--------------------%
-for k = 1:n
-    xc = xc + c * cos(cos(phi(k)) * wn * t + theta(k));  % 散射實部
-    xs = xs + c * sin(cos(phi(k)) * wn * t + theta(k));  % 散射虛部
-end
-
-%------------------加上直視 LOS 成分--------------------%
-xm = A * cos(wn * t) + 1i * A * sin(wn * t);  % 產生 A * exp(jωt) 的複數直視分量
-
-ag = abs(xm + xc + 1i * xs);       % 總和後取 magnitude
-
-%------------------繪圖顯示--------------------%
-hist(ag, 300);
-ylabel('Number of Hits');
-xlabel('Magnitude');
-
-figure(2);
-semilogy(0.000001*(1:100000), ag(1:100000));
-xlabel('Time');
-ylabel('Magnitude');
-```
-
----
-
-### ✅ 對應公式說明
-
-Rician Fading 的通道模型可以寫成：
-
-$$
-T(t) = A e^{j\omega t} + \sum_{k=1}^{N} a_k e^{j(\omega_k t + \phi_k)}
-$$
-
-* 第一項：直視 LOS 分量
-* 第二項：N 條多徑散射分量
-
-**取 magnitude** 後得到的是 **Rician 分布**。
-
----
-
-### 📌 對應表格
-
-| MATLAB 變數       | 對應公式參數                   | 說明                |   |              |
-| --------------- | ------------------------ | ----------------- | - | ------------ |
-| `A`             | LOS 振幅                   | 強度由 K-factor 決定   |   |              |
-| `xm`            | LOS 分量 $A e^{j\omega t}$ | 使用 cos + j sin 組成 |   |              |
-| `xc + j*xs`     | 多徑散射分量總和                 | N 條散射方向相加         |   |              |
-| `ag = abs(...)` | (                        | T(t)              | ) | 得到 Rician 包絡 |
-
----
-
-### 📊 與 Rayleigh 比較：
-
-| 模型類型            | 是否有 LOS？ | 分布類型        | 控制參數            |
-| --------------- | -------- | ----------- | --------------- |
-| Rayleigh Fading | 無 LOS    | Rayleigh 分布 | 無               |
-| Rician Fading   | 有 LOS    | Rician 分布   | K-factor（強 LOS） |
-
----
-
-
+> 若需加入公式推導或圖表說明，也可額外補充進來。
