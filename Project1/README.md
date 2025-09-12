@@ -1,42 +1,6 @@
-### Page 1. 四個結果圖總結
+# 📡 1. Rayleigh Fading Channel 模擬與分析筆記
 
-| 區塊位置 | 模型                     | 圖片內容    | 設定條件                            |
-| ---- | ---------------------- | ------- | ------------------------------- |
-| 左上   | Gaussian Rayleigh      | PDF 直方圖 | T=1、N=8、v=60km/h                |
-| 右上   | Rayleigh fading（含 LOS） | 時域變化圖   | T=1、N=8、v=60km/h、k=2 (K-factor) |
-| 左下   | Jakes Model            | PDF 直方圖 | 同上                              |
-| 右下   | Jakes Model            | 時域變化圖   | 同上                              |
-
----
-
-### ✅ 差異分析
-
-#### 1. 左上 Gaussian Rayleigh PDF vs 左下 Jakes PDF
-
-* **左上（Gaussian Rayleigh）** 符合理論 Rayleigh 分布，滑順單峰形狀。
-* **左下（Jakes 模擬）** 會看到抖動、多峰、不連續，這是因為：
-
-  * 散射角數 N=8 太小，不夠逼近中心極限定理。
-  * 相位未完全隨機，可能造成 constructive/destructive interference。
-
-✅ **解法**：提高 N 至 30 或 100，會更像 Rayleigh 理論曲線。
-
-#### 2. 右上 vs 右下 的時域波形比較
-
-* **右上** 明顯是 Rician Fading 的樣子（因為有 K=2）
-
-  * 包絡波動「不會到 0」→ 有一條穩定直視徑（LOS）在。
-  * 因此 dips 較淺，顯示的是 **Rician fading**。
-
-* **右下** 則是 Jakes Rayleigh 模型：
-
-  * 波動範圍更大（有 deep fading），代表沒有直視徑，只有多徑。
-
----
-
-## 📡 Rayleigh Fading Channel 模擬與分析筆記
-
-### 🎯 模擬目的
+## 🎯 模擬目的
 
 * 比較 **Jakes Model** 與 **Gaussian Rayleigh** 的 fading 特性
 * 分析在改變不同參數（T、v、N）下，fading 行為與分布的變化
@@ -58,11 +22,9 @@
 * 屬於「**物理建模**」
 
 ---
-### 📊 模擬參數變化分析與觀察結果
+## 📊 模擬參數變化分析與觀察結果
 
----
-
-#### 1. 改變 \$T = 1.5\$ （觀察總取樣時間延長的影響）
+### 1. 改變 \$T = 1.5\$ （觀察總取樣時間延長的影響）
 
 * 當 \$T\$ 增加，總時間延長，都卜勒偏移 \$\omega\_d = 2\pi f\_D\$ 並未改變，但因為時間軸變長，**每個樣本間的時間間距 \$\Delta t\$ 相對更密集**，會使得整體觀測時間的頻率分佈更完整。
 * 對於 **Jakes 模型** 而言，這有助於彌補「散射角不夠多」造成的 PDF 抖動問題。
@@ -75,7 +37,7 @@
 
 ---
 
-#### 2. 改變 \$v = 45\$ km/hr（觀察速度變化影響 Doppler Spread）
+### 2. 改變 \$v = 45\$ km/hr（觀察速度變化影響 Doppler Spread）
 
 * 都卜勒偏移頻率 \$f\_D = \frac{v}{c}f\_c\$ 隨著 \$v\$ 降低而變小
 * 表示 **channel fading 的頻率降低**，造成：
@@ -90,7 +52,7 @@
 
 ---
 
-#### 3. 改變路徑數 \$N = 20\$、\$30\$（觀察中心極限定理效果）
+### 3. 改變路徑數 \$N = 20\$、\$30\$（觀察中心極限定理效果）
 
 * Jakes Model 中，每條路徑對應一個相位：
 
@@ -151,7 +113,7 @@ h(i,:) = cn * exp(j * (cos(rfa_m(i)) * w_m * n' + phi_m));
 * **入射角方向越對準移動方向（cos θ 趨近 1）→ 造成最大 Doppler 效果**
 
 ---
-## 📈 Rician Channel 與參數變化分析
+# 📈 2. Rician Channel 與參數變化分析
 
 Rician fading impulse response:
 
