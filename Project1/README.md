@@ -92,8 +92,7 @@ $$
 $$
 
 這正是 Rayleigh 分布的定義：兩個獨立高斯隨機變數（均值 0）組合成的長度。
-
----    
+   
 ---
 
 ## 📌 原始 MATLAB 程式碼（Jakes model + Gaussian Rayleigh 對比）
