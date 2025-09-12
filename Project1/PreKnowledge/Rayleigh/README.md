@@ -78,10 +78,10 @@ $$
 因 $X,Y$ 獨立且同為 $\mathcal N(0,\sigma^2)$，其聯合密度為
 
 $$
-f_{X,Y}(x,y)=\frac{1}{2\pi\sigma^2}\exp\!\left(-\frac{x^2+y^2}{2\sigma^2}\right).
+f_{X,Y}(x,y)=\frac{1}{2\pi\sigma^2}\exp\\left(-\frac{x^2+y^2}{2\sigma^2}\right).
 $$
 
-改成極座標（ $x=r\cos\theta,\, y=r\sin\theta$，$r\ge0, \theta\in(-\pi,\pi]$ ），Jacobian 為
+改成極座標（ $x=r\cos\theta,\, y=r\sin\theta$， $r\ge0, \theta\in(-\pi,\pi]$ ），Jacobian 為
 
 $$
 \left|\frac{\partial(x,y)}{\partial(r,\theta)}\right| = r.
