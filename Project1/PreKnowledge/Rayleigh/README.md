@@ -337,15 +337,15 @@ f_R(r)
 \end{aligned}
 $$
 
-利用 \$\int\_{-\pi}^{\pi} e^{\kappa\cos u},du = 2\pi I\_0(\kappa)\$ 與平移不影響積分（\$u=\theta-\theta\_0\$），得
+利用 \$\int\_{-\pi}^{\pi} e^{\kappa\cos u},du = 2\pi I\_0(\kappa)\$ 與平移不影響積分（ \$u=\theta-\theta\_0\$ ），得
 
 $$
-\boxed{\; f_R(r) = \frac{r}{\sigma^2}\,\exp\!\left(-\frac{r^2+s^2}{2\sigma^2}\right) I_0\!\left(\frac{rs}{\sigma^2}\right),\quad r\ge 0.\;}
+\boxed{\; f_R(r) = \frac{r}{\sigma^2}\\exp\!\left(-\frac{r^2+s^2}{2\sigma^2}\right) I_0\\left(\frac{rs}{\sigma^2}\right),\quad r\ge 0.\;}
 $$
 
 這就是 **Rician 分佈** 的 PDF。
 
-> 註：當 \$s\to 0\$（無 LOS）時，\$I\_0(0)=1\$，即退化為 Rayleigh：\$f\_R(r)=\frac{r}{\sigma^2}e^{-r^2/(2\sigma^2)}\$。
+> 註：當 \$s\to 0\$（無 LOS）時， \$I\_0(0)=1\$ ，即退化為 Rayleigh： \$f\_R(r)=\frac{r}{\sigma^2}e^{-r^2/(2\sigma^2)}\$ 。
 
 ---
 
