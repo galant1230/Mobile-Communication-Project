@@ -889,3 +889,166 @@ legend('Jakes Rayleigh (K=5)','Gaussian Rayleigh (K=5)');
 grid on;
 ```
 
+---
+## 📘 BPSK 傳輸於 Rayleigh (K=5) 通道 — 錯誤率模擬詳解
+
+### 📌 模擬背景與目標
+
+* 模擬 BPSK 在 Rayleigh Fading 通道下的 BER 表現
+* 比較 **兩種模型通道**：
+
+  * 使用 **Jakes 模型產生的 Rayleigh 通道**
+  * 使用 **理想 Gaussian 分布的 Rayleigh 通道**
+* 模擬中的 **K-factor = 5**：來自通道中直視徑功率與散射分量功率的比值
+
+---
+
+### 📌 K-factor = 5 是怎麼設定的？
+
+K-factor 是透過程式碼這一段實現的：
+
+```matlab
+Eo = sqrt(10);   % 這裡 Eo^2 = A^2 = 10
+Cm = sqrt(1/N);  % 每條路徑功率，總功率=1
+h_t1 = Eo * sum(h1);
+h_t2 = Eo * sum(h2);
+```
+
+對應公式：
+
+$$
+K = \frac{A^2}{2\sigma^2} = \frac{10}{2 \cdot 1} = 5
+$$
+
+其中：
+
+* \$A^2 = 10\$：直視徑功率（Eo 的平方）
+* \$2\sigma^2 = 2\$：兩個 Rayleigh 分支總平均功率
+
+---
+
+### 🔧 程式碼區塊解析
+
+#### 🔹 1. SNR 迴圈（模擬不同的 SNR）
+
+```matlab
+for SNR = 0.1:0.1:20
+```
+
+---
+
+#### 🔹 2. 通道統計特性：平均功率與雜訊變異數
+
+```matlab
+Eb = mean(abs(c_k1).^2);
+No = Eb/SNR;
+var_w = No / 2;
+```
+
+Gaussian 通道對應：
+
+```matlab
+Eb_Gauss = mean(abs(c_k1).^2);
+No_Gauss = Eb_Gauss / SNR;
+var_w_Gauss = No_Gauss / 2;
+```
+
+---
+
+#### 🔹 3. AWGN 雜訊加入
+
+```matlab
+w_k1 = sqrt(var_w) * randn(1,length(d_k));
+w_k1_Gauss = sqrt(var_w_Gauss) * randn(1,length(d_k));
+```
+
+---
+
+#### 🔹 4. 傳輸信號（BPSK）經通道與雜訊處理
+
+```matlab
+x_k1 = c_k1 .* d_k + w_k1;
+x_k1_Gauss = c_k1 .* d_k + w_k1_Gauss;
+```
+
+---
+
+#### 🔹 5. Maximal Ratio Combining (MRC)
+
+```matlab
+decision_k = real(conj(c_k1).*x_k1 + conj(c_k2).*x_k2);
+decision_k_Gauss = real(conj(c_k1).*x_k1_Gauss + conj(c_k2).*x_k2_Gauss);
+```
+
+### 💡 MRC 是什麼？
+
+> **最大比率合併（MRC, Maximal Ratio Combining）** 是一種分集技術，
+> 可將多個接收支路的訊號依據其通道品質加權後合併，以最大化 SNR。
+
+對應公式：
+
+$$
+\hat{d} = \sum_{i=1}^L h_i^* x_i
+$$
+
+* \$h\_i\$：第 \$i\$ 條支路的通道增益
+* \$x\_i\$：接收訊號
+* \$h\_i^\*\$：複數共軛，對應 matched filter
+
+📌 優點：
+
+* 對雜訊弱但通道好者給予較高權重
+* 合併後總接收 SNR 提升，有效減少錯誤率
+
+---
+
+#### 🔹 6. 解調與錯誤判斷
+
+```matlab
+if decision_k(i) < 0
+    d_k_est(i) = -1;
+else
+    d_k_est(i) = 1;
+```
+
+然後與真實 BPSK bit 比對：
+
+```matlab
+if d_k_est(i) ~= d_k(i)
+    bit_err = bit_err + 1;
+end
+```
+
+---
+
+#### 🔹 7. 計算錯誤率
+
+```matlab
+Pb(SNR) = bit_err / bit_num;
+Pb_Gauss(SNR) = bit_Gauss_err / bit_num;
+```
+
+---
+
+### 📊 畫圖呈現
+
+```matlab
+semilogy(SNR,Pb,'b.-',SNR,Pb_Gauss,'r.-');
+legend('Jakes Rayleigh (K=5)','Gaussian Rayleigh (K=5)');
+```
+
+* y 軸取 log 顯示 BER
+* 比較兩種通道在不同 SNR 下的 BER 曲線
+
+---
+
+### ✅ 總結分析
+
+| 項目          | 說明                                      |
+| ----------- | --------------------------------------- |
+| 模型          | Rayleigh fading（Jakes 模型 vs Gaussian）   |
+| K-factor 設定 | \$K = 5\$，代表有一條較強的 LOS 分量               |
+| 技術          | BPSK 傳輸 + MRC 接收                        |
+| 評估指標        | Bit Error Rate（BER） vs SNR              |
+| 結果預期        | Jakes 模型因建構方式 BER 較差；Gaussian 模型 BER 較好 |
+
