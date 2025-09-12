@@ -92,8 +92,8 @@ Jakes 模型假設：
 其中：
 
 * 每個路徑來自不同方向 → 會有不同相位與頻率偏移。
-* 頻率偏移：$\omega_k = 2\pi f_D \cos(\theta_k)$，模擬多徑的 Doppler shift。
-* $\phi_k \sim \text{Uniform}(0,2\pi)$，模擬多徑隨機性。
+* 頻率偏移： $\omega_k = 2\pi f_D \cos(\theta_k)$ ，模擬多徑的 Doppler shift。
+* $\phi_k \sim \text{Uniform}(0,2\pi)$ ，模擬多徑隨機性。
 
 這裡就等價於：
 
