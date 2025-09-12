@@ -462,17 +462,7 @@ $$
 
 ---
 
-## 🌊 Jakes Model 與 Gaussian Rayleigh 的對應與實作筆記
-
----
-
-### 🧠 主要目的：
-
-用 **Jakes model** 模擬時間變化的 **Rayleigh fading**（即通道係數 $h(t)$ 隨時間變化的隨機過程）。
-
----
-
-## 📌 補充模型：Rician Fading Channel 模擬（有 LOS 成分）
+## 📌 3. 模型：Rician Fading Channel 模擬（有 LOS 成分）
 
 以下 MATLAB 程式碼為模擬具有直視路徑 (Line-of-Sight, LOS) 的 **Rician Fading Channel**：
 
