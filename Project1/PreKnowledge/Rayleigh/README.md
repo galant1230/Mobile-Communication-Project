@@ -269,13 +269,13 @@ $$
 
 ## 4. 為何強調「NLOS」？
 - **NLOS** 多路徑 ⇒ 許多隨機相位的微小向量相加 ⇒ $X,Y$ 零均值、等方差、獨立高斯 ⇒ **Rayleigh 包絡**。
-- **若存在強 LOS**（或主導徑），$h$ 會有**非零均值**，$R$ 的分佈就變成 **Rician**：
+- **若存在強 LOS**（或主導徑）， $h$ 會有**非零均值**， $R$ 的分佈就變成 **Rician**：
   
 $$
 f_R(r)=\frac{r}{\sigma^2}\exp\!\left(-\frac{r^2+s^2}{2\sigma^2}\right) I_0\!\left(\frac{rs}{\sigma^2}\right),
 $$
 
-  其中 $s=|\mu|$ 為 LOS 振幅、$I_0(\cdot)$ 是修正 Bessel 函數。當 $s\to 0$ 就退化成 Rayleigh。
+  其中 $s=|\mu|$ 為 LOS 振幅、 $I_0(\cdot)$ 是修正 Bessel 函數。當 $s\to 0$ 就退化成 Rayleigh。
 
 ---
 
