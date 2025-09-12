@@ -17,7 +17,7 @@ $$
 h \=\ \sum_{k=1}^{L} a_k e^{j\phi_k} \=\ X + jY,
 $$
 
-其中 $a_k \ge 0$ 為第 $k$ 條路徑的振幅，$\phi_k \sim \text{Unif}(0,2\pi)$ 且相互獨立，$L$ 很大。
+其中 $a_k \ge 0$ 為第 $k$ 條路徑的振幅， $\phi_k \sim \text{Unif}(0,2\pi)$ 且相互獨立， $L$ 很大。
 
 把實部與虛部分開：
 
