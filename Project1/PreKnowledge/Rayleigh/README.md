@@ -231,7 +231,7 @@ $$
 這就是 **Rayleigh 分佈** 的 PDF：
 
 $$
-\boxed{\, f_R(r) \;=\; \dfrac{r}{\sigma^2}\, e^{-\,r^2/(2\sigma^2)},\quad r\ge0 \, }.
+\boxed{\ f_R(r) \=\ \dfrac{r}{\sigma^2}\ e^{-\,r^2/(2\sigma^2)}\quad r\ge0 \ }.
 $$
 
 其 CDF、均值、方差分別為
