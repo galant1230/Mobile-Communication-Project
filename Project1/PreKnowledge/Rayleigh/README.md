@@ -218,7 +218,7 @@ $$
 $$
 f_{R,\Theta}(r,\theta)
 = f_{X,Y}(x,y)\cdot r
-= \frac{1}{2\pi\sigma^2}\exp\\left(-\frac{r^2}{2\sigma^2}\right)\, r.
+= \frac{1}{2\pi\sigma^2}\exp\\left(-\frac{r^2}{2\sigma^2}\right)\ r.
 $$
 
 邊際化掉 $\Theta$：
