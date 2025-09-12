@@ -74,8 +74,8 @@ $$
 拆成兩項：
 
 $$
-= \tfrac{1}{2}\cdot \frac{1}{2\pi}\int_0^{2\pi}1\, d\phi
-+ \tfrac{1}{2}\cdot \frac{1}{2\pi}\int_0^{2\pi}\cos 2\phi\, d\phi.
+= \tfrac{1}{2}\cdot \frac{1}{2\pi}\int_0^{2\pi}1\, d\phi + 
+ \tfrac{1}{2}\cdot \frac{1}{2\pi}\int_0^{2\pi}\cos 2\phi\, d\phi.
 $$
 
 因為
