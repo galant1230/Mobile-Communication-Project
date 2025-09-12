@@ -262,8 +262,8 @@ $$
 R^2 \sim \text{Exp}\!\left(\frac{1}{2\sigma^2}\right).
 $$
 
-把 $Z=R^2$ 的指數密度 $f_Z(z)=\tfrac{1}{2\sigma^2}e^{-z/(2\sigma^2)}$（$z\ge0$）做變數回代
-（$z=r^2,\, dz=2r\,dr$）即可到達同一個 Rayleigh PDF。
+把 $Z=R^2$ 的指數密度 $f_Z(z)=\tfrac{1}{2\sigma^2}e^{-z/(2\sigma^2)}$（ $z\ge0$ ）做變數回代
+（ $z=r^2,\, dz=2r\,dr$ ）即可到達同一個 Rayleigh PDF。
 
 ---
 
