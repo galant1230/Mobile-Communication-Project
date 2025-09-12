@@ -40,6 +40,79 @@ $$
 \mathbb{E}[\cos^2\phi_k] = \mathbb{E}[\sin^2\phi_k] = \frac{1}{2}.
 $$
 
+---
+### 為什麼 \$\mathbb{E}\[\cos^2\phi\_k] = \mathbb{E}\[\sin^2\phi\_k] = \tfrac{1}{2}\$
+
+假設 \$\phi\_k \sim \text{Unif}(0,2\pi)\$。
+
+---
+
+#### 1. 使用三角恆等式
+
+$$
+\cos^2\phi = \tfrac{1}{2}(1+\cos 2\phi), \qquad
+\sin^2\phi = \tfrac{1}{2}(1-\cos 2\phi).
+$$
+
+---
+
+#### 2. 對均勻分佈取期望
+
+$$
+\mathbb{E}[\cos^2\phi]
+= \frac{1}{2\pi}\int_0^{2\pi}\cos^2\phi \, d\phi,
+$$
+
+$$
+\mathbb{E}[\sin^2\phi]
+= \frac{1}{2\pi}\int_0^{2\pi}\sin^2\phi \, d\phi.
+$$
+
+代入恆等式：
+
+$$
+\mathbb{E}[\cos^2\phi]
+= \frac{1}{2\pi}\int_0^{2\pi}\tfrac{1}{2}(1+\cos 2\phi)\, d\phi.
+$$
+
+拆成兩項：
+
+$$
+= \tfrac{1}{2}\cdot \frac{1}{2\pi}\int_0^{2\pi}1\, d\phi
++ \tfrac{1}{2}\cdot \frac{1}{2\pi}\int_0^{2\pi}\cos 2\phi\, d\phi.
+$$
+
+因為
+
+$$
+\int_0^{2\pi}\cos 2\phi \, d\phi = 0,
+$$
+
+所以：
+
+$$
+\mathbb{E}[\cos^2\phi] = \tfrac{1}{2}.
+$$
+
+同理：
+
+$$
+\mathbb{E}[\sin^2\phi] = \tfrac{1}{2}.
+$$
+
+---
+
+#### 3. 結果
+
+因此：
+
+$$
+\mathbb{E}[\cos^2\phi_k] = \mathbb{E}[\sin^2\phi_k] = \tfrac{1}{2}.
+$$
+
+👉 直觀上，因為 \$\phi\$ 在 $\[0,2\pi)\$ 上均勻分佈，平均來看， \$\cos^2\$ 和 \$\sin^2\$ 分別佔一半的能量。
+
+---
 因此
 
 $$
