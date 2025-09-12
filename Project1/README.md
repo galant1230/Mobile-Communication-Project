@@ -183,8 +183,8 @@ $$
 
 比較兩種通道模型對 BPSK 傳輸系統的 BER（位元錯誤率）影響：
 
-1. **Jakes model**：\$c\[k] = h(t)|\_{t=kT}\$
-2. **Gaussian Rayleigh model**：\$c\[k] = n\_R\[k] + jn\_I\[k]\$
+1. **Jakes model**： \$c\[k] = h(t)|\_{t=kT}\$
+2. **Gaussian Rayleigh model**： \$c\[k] = n\_R\[k] + jn\_I\[k]\$
 
 並畫出 BER vs. Eb/No 曲線，觀察性能差異。
 
