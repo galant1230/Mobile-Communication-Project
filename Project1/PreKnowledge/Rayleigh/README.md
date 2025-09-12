@@ -150,6 +150,58 @@ $$
 f_{X,Y}(x,y)=\frac{1}{2\pi\sigma^2}\exp\\left(-\frac{x^2+y^2}{2\sigma^2}\right).
 $$
 
+---
+### 為什麼叫「二維圓對稱高斯」？
+
+我們的聯合分佈是：
+
+$$
+f_{X,Y}(x,y) = \frac{1}{2\pi\sigma^2} \exp\!\left(-\frac{x^2+y^2}{2\sigma^2}\right).
+$$
+
+#### 觀察重點
+
+* 指數項只跟 \$x^2+y^2\$ 有關，也就是「到原點的距離平方」：
+
+$$
+r^2 = x^2+y^2.
+$$
+
+* 所以只要半徑 \$r\$ 一樣，密度值就一樣。
+* 等機率密度的曲線滿足：
+
+$$
+x^2+y^2=c \quad (\text{常數}).
+$$
+
+* 這正是一個「以原點為圓心的圓」。
+
+#### 結論
+
+因此它是 **圓對稱 (circularly symmetric)** 的二維高斯分佈。
+
+### ASCII 圓環示意
+
+```mermaid
+%% 二維圓對稱高斯的等密度圓
+graph TD
+    O((原點))
+    subgraph 等密度圓
+        C1((r = sqrt(c1)))
+        C2((r = sqrt(c2)))
+        C3((r = sqrt(c3)))
+    end
+
+    O --- C1
+    O --- C2
+    O --- C3
+
+```
+
+👉 每一圈都是 \$x^2+y^2=c\$ 的等密度線，半徑越大，機率密度越小。
+
+---
+
 改成極座標（ $x=r\cos\theta,\, y=r\sin\theta$， $r\ge0, \theta\in(-\pi,\pi]$ ），Jacobian 為
 
 $$
