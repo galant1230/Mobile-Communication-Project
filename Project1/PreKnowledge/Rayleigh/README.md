@@ -271,11 +271,109 @@ $$
 - **NLOS** 多路徑 ⇒ 許多隨機相位的微小向量相加 ⇒ $X,Y$ 零均值、等方差、獨立高斯 ⇒ **Rayleigh 包絡**。
 - **若存在強 LOS**（或主導徑）， $h$ 會有**非零均值**， $R$ 的分佈就變成 **Rician**：
   
+### Rician 分佈：從有均值的複高斯推導
+
+### 問題設定
+
+有 LOS（或主導徑）時，複通道可寫成
+
 $$
-f_R(r)=\frac{r}{\sigma^2}\exp\!\left(-\frac{r^2+s^2}{2\sigma^2}\right) I_0\!\left(\frac{rs}{\sigma^2}\right),
+h = X + jY = \mu + n,\qquad n\sim \mathcal{CN}(0,\sigma^2),
 $$
 
-  其中 $s=|\mu|$ 為 LOS 振幅、 $I_0(\cdot)$ 是修正 Bessel 函數。當 $s\to 0$ 就退化成 Rayleigh。
+其中 \$\mu\in\mathbb{C}\$ 為**固定**（非隨機）的 LOS 成分，\$n\$ 為零均值複高斯雜訊，且
+
+$$
+X\sim\mathcal N(\mu_x,\sigma^2),\qquad Y\sim\mathcal N(\mu_y,\sigma^2),\qquad X\perp Y,
+$$
+
+令 \$s\equiv|\mu|=\sqrt{\mu\_x^2+\mu\_y^2}\$，並記 \$\mu\_x=s\cos\theta\_0,\ \mu\_y=s\sin\theta\_0\$。
+我們欲推導包絡 \$R=|h|=\sqrt{X^2+Y^2}\$ 的分佈。
+
+---
+
+### 第一步：二維高斯（有均值）的聯合密度
+
+$$
+f_{X,Y}(x,y) = \frac{1}{2\pi\sigma^2}\,\exp\!\left(-\frac{(x-\mu_x)^2+(y-\mu_y)^2}{2\sigma^2}\right).
+$$
+
+將平方和展開、並以 \$r,\theta\$ 表示：
+
+$$
+(x-\mu_x)^2+(y-\mu_y)^2
+= x^2+y^2 + \mu_x^2+\mu_y^2 - 2(x\mu_x+y\mu_y)
+= r^2 + s^2 - 2rs\cos(\theta-\theta_0),
+$$
+
+其中 \$x=r\cos\theta,\ y=r\sin\theta\$。
+
+---
+
+### 第二步：極座標變數變換
+
+Jacobian 為 \$\left|\partial(x,y)/\partial(r,\theta)\right|=r\$，故
+
+$$
+\begin{aligned}
+f_{R,\Theta}(r,\theta)
+&= f_{X,Y}(x,y)\cdot r\\
+&= \frac{1}{2\pi\sigma^2}\,\exp\!\left(-\frac{r^2+s^2-2rs\cos(\theta-\theta_0)}{2\sigma^2}\right)\,r.
+\end{aligned}
+$$
+
+---
+
+### 第三步：對角度積分，得到 \$R\$ 的邊際分佈
+
+因為只關心 \$R\$，對 \$\theta\in(-\pi,\pi]\$ 積分：
+
+$$
+\begin{aligned}
+f_R(r)
+&= \int_{-\pi}^{\pi} f_{R,\Theta}(r,\theta)\,d\theta\\
+&= \frac{r}{2\pi\sigma^2} e^{-(r^2+s^2)/(2\sigma^2)}
+\int_{-\pi}^{\pi} \exp\!\left( \frac{rs}{\sigma^2}\cos(\theta-\theta_0) \right) d\theta.
+\end{aligned}
+$$
+
+利用 \$\int\_{-\pi}^{\pi} e^{\kappa\cos u},du = 2\pi I\_0(\kappa)\$ 與平移不影響積分（\$u=\theta-\theta\_0\$），得
+
+$$
+\boxed{\; f_R(r) = \frac{r}{\sigma^2}\,\exp\!\left(-\frac{r^2+s^2}{2\sigma^2}\right) I_0\!\left(\frac{rs}{\sigma^2}\right),\quad r\ge 0.\;}
+$$
+
+這就是 **Rician 分佈** 的 PDF。
+
+> 註：當 \$s\to 0\$（無 LOS）時，\$I\_0(0)=1\$，即退化為 Rayleigh：\$f\_R(r)=\frac{r}{\sigma^2}e^{-r^2/(2\sigma^2)}\$。
+
+---
+
+### CDF（以 Marcum Q 函數表示）
+
+Rician 的 CDF 可優雅地寫為
+
+$$
+F_R(r) = \Pr(R\le r) = 1 - Q_1\!\left(\frac{s}{\sigma},\frac{r}{\sigma}\right),\qquad r\ge 0,
+$$
+
+其中 \$Q\_1(\cdot,\cdot)\$ 為一階 Marcum \$Q\$ 函數。
+
+---
+
+### 物理/幾何意義（直觀）
+
+* \$n\$ 在平面上形成以原點為中心的高斯「隨機雲」。
+* 常數向量 \$\mu\$ 把這個雲**整體平移**到以 \$\mu\$ 為中心。
+* 從原點量到點 \$(X,Y)\$ 的距離 \$R\$ 就形成「偏心的幅度分佈」—這正是 Rician。
+
+---
+
+### 參數與常見特例
+
+* \$s=|\mu|\$：LOS 強度；\$\sigma^2\$：每個 I/Q 分量的變異數。
+* 常見以 \$K\$ 因子表徵 LOS 與散射能量比：\$K\equiv \dfrac{s^2}{2\sigma^2}\$.（\$K\to 0\$：Rayleigh；\$K\to \infty\$：近似常數幅度）
+
 
 ---
 
