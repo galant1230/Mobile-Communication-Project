@@ -310,3 +310,49 @@ A = abs(h_t)
 | ----------------- | --------------------------- | ----------------- |
 | Jakes 模型          | 多徑複數正弦和，取 envelope          | Rayleigh-like（實測） |
 | Gaussian Rayleigh | 實部虛部獨立 Gaussian，取 magnitude | Rayleigh（理論）      |
+
+---
+##  Part 4 : Figure
+```matlab
+%------------------此處為計算平均值與變異數--------------------%
+mean_c = mean(c); % 複數 Gaussian 模型的均值（理論上應接近 0）
+mean_h_t = mean(h_t); % Jakes 模型的均值（理論上應接近 0）
+
+
+var_c = std(c)^2; % 複數 Gaussian 模型的變異數
+var_h_t = std(h_t).^2; % Jakes 模型的變異數
+
+
+mean_A_c = mean(a_c); % Gaussian Rayleigh 包絡的均值（理論上 = √(π/2)）
+mean_A_h = mean(A); % Jakes Rayleigh 包絡的均值（模擬值）
+
+
+var_A_c = std(a_c)^2; % Gaussian Rayleigh 包絡的變異數（理論上 = (4 - π)/2）
+var_A_h = std(A).^2; % Jakes Rayleigh 包絡的變異數（模擬值）
+
+
+%------------------繪圖顯示--------------------%
+figure(1);
+plot(y, p_a_h, 'c', y_c, p_a_c, 'r--'); % 將 Jakes Rayleigh 與 Gaussian Rayleigh 的 PDF 畫在同一張圖
+xlabel('h(t)/var');
+ylabel('P(h(t)/var)');
+title('Normalized PDF of Gaussian rayleigh and Jakes rayleigh');
+legend('Jakes rayleigh', 'Gaussian rayleigh');
+axis([0 4.5 0 1]);
+
+
+figure(2);
+hist(A, h_y); % Jakes 模型的 Rayleigh 包絡直方圖
+xlabel('frequency');
+ylabel('Number of Hits');
+title('Histogram of Jakes rayleigh');
+axis([0 4.5 0 1e5]);
+
+
+figure(3);
+hist(a_c, y_c); % Gaussian 模型的 Rayleigh 包絡直方圖
+xlabel('|y(t)|');
+ylabel('frequency');
+title('Histogram of Gaussian rayleigh');
+axis([-0.5 4.5 0 1e5]);
+```
