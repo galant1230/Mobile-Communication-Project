@@ -218,6 +218,11 @@ Rician 通道情況：K=5，表示有強直視徑（LOS）分量
 圖中展示多路徑接收時 (L=2,3)，使用 MRC（Maximal Ratio Combining）合併接收：
 
 * L=2 時：兩模型表現差不多
+```
+% 分別模擬兩條路徑的通道增益
+x_k1 = c_k1 .* d_k + w_k1;
+x_k2 = c_k2 .* d_k + w_k2;
+```
 * L=3 時：Jakes model 優於 Gaussian Rayleigh
 
 📌 解釋：
