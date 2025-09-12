@@ -81,7 +81,7 @@ $$
 f_{X,Y}(x,y)=\frac{1}{2\pi\sigma^2}\exp\!\left(-\frac{x^2+y^2}{2\sigma^2}\right).
 $$
 
-改成極座標（$x=r\cos\theta,\, y=r\sin\theta$，$r\ge0, \theta\in(-\pi,\pi]$），Jacobian 為
+改成極座標（ $x=r\cos\theta,\, y=r\sin\theta$，$r\ge0, \theta\in(-\pi,\pi]$ ），Jacobian 為
 
 $$
 \left|\frac{\partial(x,y)}{\partial(r,\theta)}\right| = r.
@@ -92,14 +92,14 @@ $$
 $$
 f_{R,\Theta}(r,\theta)
 = f_{X,Y}(x,y)\cdot r
-= \frac{1}{2\pi\sigma^2}\exp\!\left(-\frac{r^2}{2\sigma^2}\right)\, r.
+= \frac{1}{2\pi\sigma^2}\exp\\left(-\frac{r^2}{2\sigma^2}\right)\, r.
 $$
 
 邊際化掉 $\Theta$：
 
 $$
 f_R(r) = \int_{-\pi}^{\pi} f_{R,\Theta}(r,\theta)\, d\theta
-= \frac{r}{\sigma^2}\exp\!\left(-\frac{r^2}{2\sigma^2}\right),\qquad r\ge 0.
+= \frac{r}{\sigma^2}\exp\\left(-\frac{r^2}{2\sigma^2}\right),\qquad r\ge 0.
 $$
 
 這就是 **Rayleigh 分佈** 的 PDF：
@@ -111,7 +111,7 @@ $$
 其 CDF、均值、方差分別為
 
 $$
-F_R(r)=1-\exp\!\left(-\frac{r^2}{2\sigma^2}\right),\quad r\ge0,
+F_R(r)=1-\exp\\left(-\frac{r^2}{2\sigma^2}\right),\quad r\ge0,
 $$
 
 $$
