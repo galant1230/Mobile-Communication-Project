@@ -782,4 +782,110 @@ semilogy 用於 y-axis 為 log-scale
 | `conj(h).*xh` | equalization  | 使用 channel estimate 做解碼 |
 | `symerr()`    | BER           | 算計誤碼率                   |
 
+---
+# 5. Ber Kfactor Bpsk·
+
+```matlab
+clc;clear; 
+%----------------------------- 先給定參數 -----------------------------%
+T=3;                            % 總模擬時間
+delta_t=0.0001;                 % 每個時間點的間距
+N=100;                          % 散射體數量（注意太大會造成效能問題）
+fc=3.5*10^9;                    % 載波頻率
+c=3*10^8;                       % 光速
+Eo=sqrt(10);                    % 能量參數（根號10）
+v=(60000)/3600;                 % 使用者速度 (m/s)
+landa=c/fc;                     % 波長
+cm=sqrt(1/N);                   % 每條路徑的增益（根號1/N）
+w_n=(2*pi*v)/landa;             % 都卜勒角頻率
+T=0:delta_t:T;                  % 時間向量
+i=0:1:N-1;                      % 散射體索引
+rfa_m=(2*pi*i/N);               % 每個路徑的散射角
+%------------------------- 計算Jakes模型的h(t) -------------------------%
+for i=1:N
+    phi_m=2*pi*rand(1,1);                                  % 每條路徑一個隨機相位
+    h1(i,:)=cm*exp(1j*(cos(rfa_m(i))*w_n*T+phi_m));       % 第一組Jakes波形
+end
+
+for i=1:N
+    phi_m=2*pi*rand(1,1);                                  % 第二組Jakes波形
+    h2(i,:)=cm*exp(1j*(cos(rfa_m(i))*w_n*T+phi_m));
+end
+
+h_t1=Eo*sum(h1);      % 第一組 Jakes 模型總和（強LOS情況）
+h_t2=Eo*sum(h2);      % 第二組 Jakes 模型總和（NLOS情況）
+%-------------------------- 產生c[k] ------------------------------%
+c_k1=h_t1;            % c[k] 第一通道（LOS為主，Rician）
+c_k2=h_t2;            % c[k] 第二通道（類Rayleigh）
+
+%-------------------------- 產生d[k] ------------------------------%
+bit_num=length(c_k1);           % 資料總長度
+d_k=source(bit_num);            % 產生 ±1 的 BPSK 資料
+
+%--------------------- 計算BPSK錯誤率 ---------------------------%
+for SNR=0.1:0.1:20
+    %----- 模擬通道增益（取樣均值與變異數） -----%
+    mean_c_k1=mean(c_k1);
+    var_c_k1=std(c_k1)^2;
+    Eb=mean(abs(c_k1).^2);
+    No=Eb/SNR;
+    var_w=No/2;
+    Eb_Gauss=mean(abs(c_k1).^2);
+    No_Gauss=Eb_Gauss/SNR;
+    var_w_Gauss=No_Gauss/2;
+
+    %----- 加入AWGN雜訊 -----%
+    w_k1=sqrt(var_w)*randn(1,length(d_k));
+    w_k2=sqrt(var_w)*randn(1,length(d_k));
+    w_k1_Gauss=sqrt(var_w_Gauss)*randn(1,length(d_k));
+    w_k2_Gauss=sqrt(var_w_Gauss)*randn(1,length(d_k));
+
+    %----- 通道增益乘上資料，加上雜訊 -----%
+    x_k1=c_k1.*d_k+w_k1;
+    x_k2=c_k2.*d_k+w_k2;
+    x_k1_Gauss=c_k1.*d_k+w_k1_Gauss;
+    x_k2_Gauss=c_k2.*d_k+w_k2_Gauss;
+
+    %------------------ 模擬接收機處理 ------------------%
+    % Maximal Ratio Combining (MRC)
+    decision_k=real(conj(c_k1).*x_k1 + conj(c_k2).*x_k2);
+    decision_k_Gauss=real(conj(c_k1).*x_k1_Gauss + conj(c_k2).*x_k2_Gauss);
+
+    %------------------ 判斷錯誤位元數 ------------------%
+    bit_err=0; bit_Gauss_err=0;
+    for i=1:length(c_k1)
+        if decision_k(i)<0
+            d_k_est(i)=-1;
+        else
+            d_k_est(i)=1;
+        end
+
+        if d_k_est(i)~=d_k(i)
+            bit_err=bit_err+1;
+        end
+
+        if decision_k_Gauss(i)<0
+            d_k_Gauss_esti(i)=-1;
+        else
+            d_k_Gauss_esti(i)=1;
+        end
+
+        if d_k_Gauss_esti(i)~=d_k(i)
+            bit_Gauss_err=bit_Gauss_err+1;
+        end
+    end
+
+    Pb(SNR)=bit_err/bit_num;
+    Pb_Gauss(SNR)=bit_Gauss_err/bit_num;
+end
+
+%----------------------- 畫圖顯示 -----------------------%
+SNR=0.1:0.1:20;
+semilogy(SNR,Pb,'b.-',SNR,Pb_Gauss,'r.-');
+xlabel('Eb/No');
+ylabel('BER');
+title('BPSK 在 K=5 的 Jakes & Gaussian Rayleigh 通道下的性能比較');
+legend('Jakes Rayleigh (K=5)','Gaussian Rayleigh (K=5)');
+grid on;
+```
 
