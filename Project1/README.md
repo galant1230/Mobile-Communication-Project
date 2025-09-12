@@ -30,6 +30,72 @@ $$
     
 ---
 
+## 🧪 為什麼 Jakes 模型的 Envelope 是 Rayleigh？
+
+> 這個複數總和公式長得跟 Rayleigh 分布好像不太一樣，為什麼取絕對值之後就會是 Rayleigh？
+
+讓我們一步步解析：
+
+### 📌 Step 1：Jakes 模型公式
+
+$$
+T(t) = E_0 \sum_{m=1}^{N} C_m e^{j(\cos \alpha_m \, \omega_d t + \phi_m)}
+$$
+
+我們關心的是其 **envelope**：
+
+$$
+|T(t)| = \left| \sum_{m=1}^N C_m e^{j(\cos \alpha_m \omega_d t + \phi_m)} \right|
+$$
+
+---
+
+### 📌 Step 2：轉換為實部與虛部的總和
+
+利用歐拉公式：
+
+$$
+e^{j\theta} = \cos(\theta) + j \sin(\theta)
+$$
+
+所以總和變成：
+
+$$
+T(t) = \sum C_m \cos(\psi_m(t)) + j \sum C_m \sin(\psi_m(t))
+$$
+
+其中 $\psi_m(t) = \cos \alpha_m \, \omega_d t + \phi_m$
+
+---
+
+### 📌 Step 3：中心極限定理（CLT）應用
+
+若：
+
+* $\phi_m \sim \text{Uniform}(0,2\pi)$
+* $\alpha_m$ 多方向分布 → 對應不同 Doppler
+* $C_m = 1/\sqrt{N}$（或常數）
+
+則：
+
+* $\text{Re}(T(t)) \sim \mathcal{N}(0,\sigma^2)$
+* $\text{Im}(T(t)) \sim \mathcal{N}(0,\sigma^2)$
+
+因為是很多獨立小分量的總和，根據中心極限定理會趨近 Gaussian！
+
+---
+
+### 📌 Step 4：複數 Gaussian 取絕對值會變成 Rayleigh
+
+$$
+|T(t)| = \sqrt{\text{Re}(T(t))^2 + \text{Im}(T(t))^2} \sim \text{Rayleigh}(\sigma)
+$$
+
+這正是 Rayleigh 分布的定義：兩個獨立高斯隨機變數（均值 0）組合成的長度。
+
+---    
+---
+
 ## 📌 原始 MATLAB 程式碼（Jakes model + Gaussian Rayleigh 對比）
 
 ```matlab
