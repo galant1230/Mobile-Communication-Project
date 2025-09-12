@@ -61,7 +61,7 @@ $$
 
 $$
 X \sim \mathcal N(0,\sigma^2),\qquad Y \sim \mathcal N(0,\sigma^2),\qquad
-\sigma^2 \;=\; \frac{1}{2}\sum_{k=1}^{L}\mathbb{E}[a_k^2],
+\sigma^2 \=\ \frac{1}{2}\sum_{k=1}^{L}\mathbb{E}[a_k^2],
 $$
 
 且 $X$ 與 $Y$ 獨立同分佈。這稱為**圓對稱複高斯**（CSCG）隨機變數。
