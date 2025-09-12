@@ -250,3 +250,63 @@ $$
 | `exp(j*(...))`                     | $e^{j(...)}$                          | 複數正弦波（旋轉向量）         |
 | `h(i,:) = cn * exp(...)`           | $C_m e^{j(...)}$                      | 每條路徑帶有相同權重 C\_m     |
 | `h_t = Eo * sum(h);`               | $E_0 \sum_{m=1}^{N} ...$              | 最後的通道係數是所有路徑加總      |
+
+---
+
+## Part 3 : Jakes model + Gaussian Rayleigh 對比
+
+```matlab
+%------------------計算 Jakes 的 Rayleigh fading PDF --------------------%
+A = abs(h_t);                           % 對複數通道係數取絕對值 → 得到 fading 包絡
+[a_h, y] = hist(A, h_y);               % 將 A 資料分成區間 (bin)，得到直方圖
+p_a_h = a_h ./ (sum(a_h) * 0.1);       % 將直方圖正規化成機率密度函數（PDF），bin 寬為 0.1
+
+%------------------計算 Gaussian Rayleigh fading PDF --------------------%
+var = 1;                                % 設定變異數
+c = sqrt(var/2) * (randn(1,1000000) + j*randn(1,1000000));
+                                       % 產生複數 Gaussian 隨機變數，實虛部獨立
+
+a_c = abs(c);                          % 取 magnitude 得到 Rayleigh 分布樣本
+
+y_c = 0:0.1:10;                         % 分割範圍
+[a_c_y, c_y] = hist(a_c, y_c);         % 建立直方圖
+p_a_c = a_c_y ./ (sum(a_c_y) * 0.1);   % 正規化成機率密度函數（PDF）
+```
+
+---
+
+### ✅ 對應說明：
+
+#### Jakes 模型部分：
+
+這裡從前面建構好的時間序列通道係數 `h_t`，
+經由：
+
+```matlab
+A = abs(h_t)
+```
+
+取得其包絡 → **這就是 Rayleigh fading** 的樣本。
+
+再使用 `hist()`：
+
+* 對這些樣本作統計，計算落在每個 bin 區間的數量
+* 除以總樣本數與 bin 寬，即可正規化為 PDF
+
+---
+
+#### Gaussian 模型部分：
+
+這部分直接產生理論上的 Rayleigh 分布：
+
+* 複數數列 `c = x + jy`，其中 x, y 為獨立高斯
+* 取其 `abs(c)` 得到 Rayleigh 分布
+
+這裡的 `1000000` 是樣本數，越大越接近理論曲線。
+
+---
+
+| 模型                | 建構方式                        | 分布類型              |
+| ----------------- | --------------------------- | ----------------- |
+| Jakes 模型          | 多徑複數正弦和，取 envelope          | Rayleigh-like（實測） |
+| Gaussian Rayleigh | 實部虛部獨立 Gaussian，取 magnitude | Rayleigh（理論）      |
