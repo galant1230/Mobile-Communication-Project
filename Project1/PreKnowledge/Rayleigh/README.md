@@ -371,8 +371,8 @@ $$
 
 ### 參數與常見特例
 
-* \$s=|\mu|\$：LOS 強度；\$\sigma^2\$：每個 I/Q 分量的變異數。
-* 常見以 \$K\$ 因子表徵 LOS 與散射能量比：\$K\equiv \dfrac{s^2}{2\sigma^2}\$.（\$K\to 0\$：Rayleigh；\$K\to \infty\$：近似常數幅度）
+*  \$s=|\mu|\$ ：LOS 強度； \$\sigma^2\$ ：每個 I/Q 分量的變異數。
+* 常見以 \$K\$ 因子表徵 LOS 與散射能量比： \$K\equiv \dfrac{s^2}{2\sigma^2}\$ .（ \$K\to 0\$：Rayleigh；\$K\to \infty\$ ：近似常數幅度）
 
 
 ---
