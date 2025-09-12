@@ -1,4 +1,4 @@
-## 🌊 Jakes Model 與 Gaussian Rayleigh 的對應與實作筆記
+# 1. 🌊 Jakes Model 與 Gaussian Rayleigh 的對應與實作筆記
 
 ---
 
